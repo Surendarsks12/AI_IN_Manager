@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Industry</title>
+  <style>
+body {
+  text-align: center;
+  background-color: rgb(202,255,112);
+  }
+    h1 {
+      text-align: center;
+    }
+
+    input {
+      padding: 8px;
+      width: 220px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+  <h1>USER LOG-IN</h1><br><br><br>
+
+  <label for="email-id">Email-id</label>
+  <input id="email-id" name="email-id" type="email" placeholder="Enter your email"
+    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"><br><br>
+  <label for="password">User-Name</label>
+  <input id="password" name="password" placeholder="Enter your password"><br><br>
+  <button type="submit" id="submit">Log-in</button><br><br>
+
+  <p>New here? Don't worry.... <a href="form.html">Click here</a> to register </p>
+</body>
+<script>
+  document.getElementById("submit").addEventListener("click", function () {
+    const email = document.getElementById("email-id").value;
+    const password = document.getElementById("password").value;
+
+    fetch("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyPuojERNQGneV9zYDbDNucKQcA7cRr9eCiulOnl0Z4dRVPCyrq-6sR8ExT6IrnM5UP-g/exec/exec?email=" + email + "&password=" + password)
+      .then((res) => res.text())
+      .then((data) => {
+        if (data === "success") {
+          window.location.href = "dashboard.html";
+        } else {
+          alert("Invalid email or password!");
+        }
+      })
+      .catch((err) => {
+        console.error("Error:", err);
+        alert("Error contacting server.");
+      });
+  });
+</script>
+
+<style>
+  body{
+  text-align: center;
+  }
+</style>
+</html>
