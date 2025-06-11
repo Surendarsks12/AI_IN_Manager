@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>New user Registration</title>
+</head>
+<style>
+body {
+  text-align: center;
+  background-color: rgb(118,238,198);
+  }
+  input {
+      padding: 8px;
+      width: 220px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+</style>
+<body>
+<div class="form">
+<h1>New User Registration</h1>
+
+  <label style="text-indent: 2em;" id="name-label" for="name">Name</label>
+    <input type="text" id="name" name="name" required placeholder="Enter your name"><br><br>
+
+    <label for="email-id">Email-id</label>
+  <input id="email-id" name="email-id" type="email" placeholder="Enter your email"
+    pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"><br><br>
+
+  <label for="password">User-Name</label>
+  <input id="password" name="password" placeholder="Enter your password"><br><br>
+
+  <label for="phonenumber">Phone number</label>
+  <input id="phonenumber" name="phonenumber" placeholder="+91 indian Ph no."><br><br>
+
+  <button type="button" id="submit">Register</button>
+</div>
+</body>
+<script>
+  document.getElementById("submit").addEventListener("click", function () {
+    const name = document.getElementById("name").value;
+    const email = document.getElementById("email-id").value;
+    const password = document.getElementById("password").value;
+    const phone = document.getElementById("phonenumber").value;
+
+    const formData = new FormData();
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("password", password);
+    formData.append("phone", phone);
+
+    fetch("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbwcgJdQBXOI7O_HPma_sZpSfi1nhDvqbPgPp_yxd1oLBmQ8WSV1A_nJYvmH3KDfb9UwRw/exec/exec", {
+      method: "POST",
+      body: formData,
+    })
+      .then((res) => res.text())
+      .then((data) => {
+        if (data === "success") {
+          alert("Registration successful!");
+          window.location.href = "index.html"; // redirect to login
+        } else {
+          alert("Something went wrong. Try again.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error:", err);
+        alert("Server error. Try again.");
+      });
+  });
+</script>
+
+</html>
+
+
