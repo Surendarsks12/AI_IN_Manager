@@ -44,7 +44,7 @@ body {
     const password = document.getElementById("password").value;
     const phone = document.getElementById("phonenumber").value;
 
-    const existingEmails = await fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec")
+    const existingEmails = await fetch("https://script.google.com/macros/s/AKfycbx5MakvfZamIO9pmarqoe5wJ_nhu4uQW6OwFG5Wjm1DLan4MA571__gj-qu8fVECA3DVA/exec")
       .then(res => res.json())
       .catch(err => {
         alert("Error fetching existing users.");
