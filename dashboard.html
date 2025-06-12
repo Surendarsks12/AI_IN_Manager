@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User desk</title>
+</head>
+<body>
+<h1>User's Desk</h1>
+<br><br>
+  <form id="managementForm">
+      <h3>Management Login</h3>
+    <label for="m_password">Secret code</label><br>
+    <input id="m_password" name="m_password" type="password" required><br>
+    <button type="submit">Login as Manager</button>
+  </form>
+<p><strong>Note:</strong><em>Management login requires  a secrete code.<br>
+Contact your organisation for more details
+</em></p><br>
+<a href="employee-login">Employee login</a><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+</body>
+  <script>
+    document.getElementById("managementForm").addEventListener("submit", function(event) {
+      event.preventDefault(); // Prevent default form submit
+
+      const enteredCode = document.getElementById("m_password").value.trim();
+
+      if (enteredCode === "india123") {
+        window.location.href = "management.html"; // Redirect to management page
+      } else {
+        alert("❌ Incorrect secret code.");
+      }
+    });
+  </script>
+<style>
+    body{
+    text-align: center;
+    background-color: rgb(127,255,212);
+    font-size: 20px}
+</style>
+</html>
