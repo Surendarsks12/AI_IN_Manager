@@ -44,7 +44,7 @@ body {
     const password = document.getElementById("password").value;
     const phone = document.getElementById("phonenumber").value;
 
-    const existingEmails = await fetch("https://script.google.com/macros/s/AKfycbx5MakvfZamIO9pmarqoe5wJ_nhu4uQW6OwFG5Wjm1DLan4MA571__gj-qu8fVECA3DVA/exec")
+    const existingEmails = await fetch("https://script.google.com/macros/s/AKfycbwAiPXsOPP9qfnS_3pFFVgG-18-fST_PaUyFuuEkU0skiiT-b0Hn1DFDfpbEM8k2pwEvw/exec")
       .then(res => res.json())
       .catch(err => {
         alert("Error fetching existing users.");
@@ -60,7 +60,7 @@ body {
     formData.append("email", email);
     formData.append("password", password);
     formData.append("phone", phone);
-    fetch("https://script.google.com/macros/s/AKfycbx5MakvfZamIO9pmarqoe5wJ_nhu4uQW6OwFG5Wjm1DLan4MA571__gj-qu8fVECA3DVA/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbwAiPXsOPP9qfnS_3pFFVgG-18-fST_PaUyFuuEkU0skiiT-b0Hn1DFDfpbEM8k2pwEvw/exec", {
       method: "POST",
       body: formData,
     })
