@@ -38,37 +38,48 @@ body {
 </div>
 </body>
 <script>
-  document.getElementById("submit").addEventListener("click", function () {
+  document.getElementById("submit").addEventListener("click", async function () {
     const name = document.getElementById("name").value;
     const email = document.getElementById("email-id").value;
     const password = document.getElementById("password").value;
     const phone = document.getElementById("phonenumber").value;
 
+    const existingEmails = await fetch("https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec")
+      .then(res => res.json())
+      .catch(err => {
+        alert("Error fetching existing users.");
+        console.error(err);
+        return [];
+      });
+    if (existingEmails.includes(email)) {
+      alert("User already exists with this email!");
+      return; // Stop registration
+    }
     const formData = new FormData();
     formData.append("name", name);
     formData.append("email", email);
     formData.append("password", password);
     formData.append("phone", phone);
-
-    fetch("https://script.google.com/macros/s/AKfycbwcgJdQBXOI7O_HPma_sZpSfi1nhDvqbPgPp_yxd1oLBmQ8WSV1A_nJYvmH3KDfb9UwRw/exec", {
+    fetch("https://script.google.com/macros/s/AKfycbx5MakvfZamIO9pmarqoe5wJ_nhu4uQW6OwFG5Wjm1DLan4MA571__gj-qu8fVECA3DVA/exec", {
       method: "POST",
       body: formData,
     })
-    .then((res) => res.text())
-    .then((data) => {
-      if (data === "success") {
-        alert("Registration successful!");
-        window.location.href = "index.html"; // redirect to login
-      } else {
-        alert("Something went wrong. Try again.");
-      }
-    })
-    .catch((err) => {
-      console.error("Error:", err);
-      alert("Server error. Try again.");
-    });
+      .then((res) => res.text())
+      .then((data) => {
+        if (data === "success") {
+          alert("Registration successful!");
+          window.location.href = "index.html";
+        } else {
+          alert("Something went wrong. Try again.");
+        }
+      })
+      .catch((err) => {
+        console.error("Error:", err);
+        alert("Server error. Try again.");
+      });
   });
 </script>
+
 
 
 </html>
