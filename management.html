@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Manager Panel - Product Entry</title>
+</head>
+<body>
+
+  <h1>Product Allocation Desk</h1>
+
+  <label for="start-date"><strong>Start Date:</strong></label>
+  <input type="date" id="start-date" name="start-date" required>
+  <br><br>
+
+  <table id="product-table">
+    <thead>
+      <tr>
+        <th>Product Code</th>
+        <th>Quantity</th>
+        <th>Delivery Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><input type="text" placeholder="E.g. PRD001" required></td>
+        <td><input type="number" min="1" placeholder="Qty" required></td>
+        <td><input type="date" required></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <button onclick="addRow()">➕ Add Another Product</button>
+
+</body>
+
+<script>
+  function addRow() {
+    const table = document.getElementById('product-table').getElementsByTagName('tbody')[0];
+    const newRow = table.insertRow();
+
+    // Add cells with input fields
+    newRow.innerHTML = `
+      <td><input type="text" placeholder="E.g. PRD001" required></td>
+      <td><input type="number" min="1" placeholder="Qty" required></td>
+      <td><input type="date" required></td>
+    `;
+  }
+</script>
+<style>
+    body {
+      font-family: "Times New Roman", sans-serif;
+      padding: 30px;
+      background-color: rgb(127,255,212);
+      text-align: center;
+    }
+
+    table {
+      margin: 20px auto;
+      border-collapse: collapse;
+      width: 80%;
+    }
+
+    th, td {
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+
+    th {
+      background-color: #555;
+      color: white;
+    }
+
+    input[type="date"],
+    input[type="text"],
+    input[type="number"] {
+      width: 95%;
+      padding: 6px;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      background-color: rgb(0,0,205);
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+
+</body>
+</html>
