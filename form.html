@@ -38,47 +38,50 @@ body {
 </div>
 </body>
 <script>
+  const scriptURL = "https://script.google.com/macros/s/AKfycbwAiPXsOPP9qfnS_3pFFVgG-18-fST_PaUyFuuEkU0skiiT-b0Hn1DFDfpbEM8k2pwEvw/exec"; 
+
   document.getElementById("submit").addEventListener("click", async function () {
     const name = document.getElementById("name").value;
     const email = document.getElementById("email-id").value;
     const password = document.getElementById("password").value;
     const phone = document.getElementById("phonenumber").value;
 
-    const existingEmails = await fetch("https://script.google.com/macros/s/AKfycbwAiPXsOPP9qfnS_3pFFVgG-18-fST_PaUyFuuEkU0skiiT-b0Hn1DFDfpbEM8k2pwEvw/exec")
-      .then(res => res.json())
-      .catch(err => {
-        alert("Error fetching existing users.");
-        console.error(err);
-        return [];
-      });
-    if (existingEmails.includes(email)) {
-      alert("User already exists with this email!");
-      return; // Stop registration
-    }
-    const formData = new FormData();
-    formData.append("name", name);
-    formData.append("email", email);
-    formData.append("password", password);
-    formData.append("phone", phone);
-    fetch("https://script.google.com/macros/s/AKfycbwAiPXsOPP9qfnS_3pFFVgG-18-fST_PaUyFuuEkU0skiiT-b0Hn1DFDfpbEM8k2pwEvw/exec", {
-      method: "POST",
-      body: formData,
-    })
-      .then((res) => res.text())
-      .then((data) => {
-        if (data === "success") {
-          alert("Registration successful!");
-          window.location.href = "index.html";
-        } else {
-          alert("Something went wrong. Try again.");
-        }
+    try {
+      const response = await fetch(scriptURL);
+      const existingEmails = await response.json();
+
+      if (existingEmails.includes(email)) {
+        alert("User already exists with this email!");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("name", name);
+      formData.append("email", email);
+      formData.append("password", password);
+      formData.append("phone", phone);
+
+      fetch(scriptURL, {
+        method: "POST",
+        body: formData,
       })
-      .catch((err) => {
-        console.error("Error:", err);
-        alert("Server error. Try again.");
-      });
+        .then((res) => res.text())
+        .then((data) => {
+          if (data === "success") {
+            alert("Registration successful!");
+            window.location.href = "index.html";
+          } else {
+            alert("Something went wrong. Try again.");
+          }
+        });
+
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Error fetching existing users.");
+    }
   });
 </script>
+
 
 
 
