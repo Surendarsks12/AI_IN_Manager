@@ -51,19 +51,17 @@
 
     // Populate all dropdowns on load
     window.onload = populateDropdowns;
-    function populateDropdowns() {
-      fetch(SCRIPT_URL)
-        .then(res => res.json())
-        .then(data => {
-          document.querySelectorAll("select").forEach(select => {
-            select.innerHTML = `<option value="">-- Select --</option>`;
-            data.forEach(([id, name]) => {
-              const o = document.createElement("option");
-              o.value = id;
-              o.textContent = `${id} — ${name}`;
-              select.appendChild(o);
-            });
-          });
+    fetch(SCRIPT_URL)
+  .then(res => res.json())
+  .then(data => {
+    const select = newRow.querySelector("select");
+    data.forEach(([id, name]) => {
+      const option = document.createElement("option");
+      option.value = id;
+      option.textContent = `${id} — ${name}`;
+      select.appendChild(option);
+    });
+  });
         })
         .catch(err => console.error("Error loading dropdown:", err));
     }
