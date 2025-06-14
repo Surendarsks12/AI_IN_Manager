@@ -29,7 +29,8 @@
 
     input[type="date"],
     input[type="text"],
-    input[type="number"] {
+    input[type="number"],
+    select {
       width: 95%;
       padding: 6px;
       box-sizing: border-box;
@@ -75,7 +76,11 @@
     </thead>
     <tbody>
       <tr>
-        <td><input type="text" placeholder="E.g. CMP001" onblur="fetchComponentName(this)" required></td>
+        <td>
+          <select onchange="fetchComponentName(this)">
+            <option value="">-- Select --</option>
+          </select>
+        </td>
         <td><span class="component-name"></span></td>
         <td><input type="number" min="1" placeholder="Qty" disabled required></td>
         <td><input type="date" disabled required></td>
@@ -86,39 +91,91 @@
   <button onclick="addRow()">➕ Add Another Product</button>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwTLBpU-zY0UE9Vn0jIQY6RcCfNS4agvQ8aXPye7_qVnSFNvtbgPCKmRrX5lPiheGOrbw/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycby5Un2xRb-_DFGYRE0iyJL5SrbIWtw1pUnAGGUzDmQmINSX4-VgIH7SeTmIOxcIBxD4xg/exec";
 
-    function fetchComponentName(input) {
-      const code = input.value.trim();
-      const row = input.closest("tr");
+    // Load dropdown data on page load
+    window.onload = function () {
+      populateDropdowns();
+    };
+
+    function populateDropdowns() {
+      fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+          document.querySelectorAll("select").forEach(select => {
+            // Clear previous options except default
+            select.innerHTML = `<option value="">-- Select --</option>`;
+            data.forEach(([id, name]) => {
+              const option = document.createElement("option");
+              option.value = id;
+              option.textContent = `${id} - ${name}`;
+              select.appendChild(option);
+            });
+          });
+        })
+        .catch(err => console.error("Dropdown fetch error:", err));
+    }
+
+    function fetchComponentName(select) {
+      const code = select.value;
+      const row = select.closest("tr");
       const nameCell = row.querySelector(".component-name");
       const qtyInput = row.cells[2].querySelector("input");
       const dateInput = row.cells[3].querySelector("input");
 
-     fetch(`${SCRIPT_URL}?code=${code}`)
-  .then(res => res.text())
-  .then(name => {
-    console.log("Response received:", name); 
-    if (name === "INVALID") {
-      nameCell.textContent = "❌ Invalid Component ID";
-      nameCell.className = "component-name error";
-      qtyInput.disabled = true;
-      dateInput.disabled = true;
-    } else {
-      nameCell.textContent = name;
-      nameCell.className = "component-name";
-      qtyInput.disabled = false;
-      dateInput.disabled = false;
-    }
-  })
-  .catch(err => {
-    console.error("Fetch error:", err); // <-- Already there
-    nameCell.textContent = "⚠️ Error fetching component";
-    nameCell.className = "component-name error";
-  });
+      if (!code) return;
 
+      fetch(`${SCRIPT_URL}?code=${code}`)
+        .then(res => res.text())
+        .then(name => {
+          if (name === "INVALID") {
+            nameCell.textContent = "❌ Invalid Component ID";
+            nameCell.className = "component-name error";
+            qtyInput.disabled = true;
+            dateInput.disabled = true;
+          } else {
+            nameCell.textContent = name;
+            nameCell.className = "component-name";
+            qtyInput.disabled = false;
+            dateInput.disabled = false;
+          }
+        })
+        .catch(err => {
+          console.error("Component fetch error:", err);
+          nameCell.textContent = "⚠️ Error fetching component";
+          nameCell.className = "component-name error";
+        });
+    }
+
+    function addRow() {
+      const table = document.getElementById('product-table').getElementsByTagName('tbody')[0];
+      const newRow = table.insertRow();
+
+      newRow.innerHTML = `
+        <td>
+          <select onchange="fetchComponentName(this)">
+            <option value="">-- Select --</option>
+          </select>
+        </td>
+        <td><span class="component-name"></span></td>
+        <td><input type="number" min="1" placeholder="Qty" disabled required></td>
+        <td><input type="date" disabled required></td>
+      `;
+
+      // Fill new select with data
+      fetch(SCRIPT_URL)
+        .then(res => res.json())
+        .then(data => {
+          const select = newRow.querySelector("select");
+          data.forEach(([id, name]) => {
+            const option = document.createElement("option");
+            option.value = id;
+            option.textContent = `${id} - ${name}`;
+            select.appendChild(option);
+          });
+        });
+    }
   </script>
 
 </body>
 </html>
-
