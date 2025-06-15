@@ -10,23 +10,19 @@
       background-color: rgb(127,255,212);
       text-align: center;
     }
-
     table {
       margin: 20px auto;
       border-collapse: collapse;
       width: 90%;
     }
-
     th, td {
       border: 1px solid #ccc;
       padding: 10px;
     }
-
     th {
       background-color: #555;
       color: white;
     }
-
     input[type="date"],
     input[type="text"],
     input[type="number"],
@@ -35,16 +31,13 @@
       padding: 6px;
       box-sizing: border-box;
     }
-
     .component-name {
       font-weight: bold;
       color: green;
     }
-
     .component-name.error {
       color: red;
     }
-
     button {
       padding: 10px 20px;
       margin-top: 20px;
@@ -75,22 +68,30 @@
       </tr>
     </thead>
     <tbody>
-      <!-- Initial Row -->
+      <!-- Rows will be added after data loads -->
     </tbody>
   </table>
 
   <button onclick="addRow()">➕ Add Another Product</button>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxk8idWahHdZJCz_2wgP_2Qn4WmQsMMJXT3urxr0Wle10-D7wSduuO-6yjmC9lHHs5AcQ/exec";
+    // ✅ Use your deployed script URL
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWsN-rG4f98gG4iAFggaTWnNUchNUu6xHRjHnEjQkYV4qzwkvIn8xGjHnPaBE1dkPR6g/exec";
+
     let componentOptions = [];
 
     window.onload = function () {
+      console.log("Fetching component data...");
       fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
+          console.log("Received data:", data);
           componentOptions = data;
-          addRow(); // Add first row after data is loaded
+          addRow(); // Only after data loaded
+        })
+        .catch(err => {
+          console.error("Fetch failed:", err);
+          alert("❌ Failed to load component data");
         });
     };
 
@@ -113,6 +114,7 @@
 
       if (!code) {
         nameCell.textContent = "";
+        nameCell.className = "component-name";
         qtyInput.disabled = true;
         dateInput.disabled = true;
         return;
@@ -134,8 +136,8 @@
     }
 
     function addRow() {
-      const tbody = document.getElementById("product-table").querySelector("tbody");
-      const newRow = document.createElement("tr");
+      const tbody = document.querySelector("#product-table tbody");
+      const newRow = tbody.insertRow();
 
       newRow.innerHTML = `
         <td>
@@ -148,8 +150,6 @@
         <td><input type="date" disabled required></td>
       `;
 
-      tbody.appendChild(newRow);
-
       const select = newRow.querySelector("select");
       fillSelect(select, componentOptions);
     }
@@ -157,4 +157,3 @@
 
 </body>
 </html>
-
