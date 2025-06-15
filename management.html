@@ -48,6 +48,11 @@
       font-size: 16px;
       cursor: pointer;
     }
+    .loading {
+      color: #555;
+      font-size: 18px;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -58,13 +63,16 @@
   <input type="date" id="start-date" name="start-date" required>
   <br><br>
 
-  <table id="product-table">
+  <div id="loading" class="loading">Loading components...</div>
+
+  <table id="product-table" style="display:none;">
     <thead>
       <tr>
         <th>Component Code</th>
         <th>Component Name</th>
         <th>Quantity</th>
         <th>Delivery Date</th>
+        <th>Remove</th>
       </tr>
     </thead>
     <tbody>
@@ -72,29 +80,38 @@
     </tbody>
   </table>
 
-  <button onclick="addRow()">➕ Add Another Product</button>
+  <button id="add-row-btn" style="display:none;">➕ Add Another Product</button>
 
   <script>
     // ✅ Use your deployed script URL
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWsN-rG4f98gG4iAFggaTWnNUchNUu6xHRjHnEjQkYV4qzwkvIn8xGjHnPaBE1dkPR6g/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbz14XqnlH4RqGrB9P3M_2KwmkA4gdoZF9Zmvf8LYRGa5nLLpIV4-Jvmu1QJTP83TWCUGg/exec";
 
     let componentOptions = [];
 
+    // Fetch component data on load
     window.onload = function () {
-      console.log("Fetching component data...");
       fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
-          console.log("Received data:", data);
+          if (!Array.isArray(data) || data.length === 0) {
+            throw new Error("No component data found.");
+          }
           componentOptions = data;
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('product-table').style.display = '';
+          document.getElementById('add-row-btn').style.display = '';
           addRow(); // Only after data loaded
         })
         .catch(err => {
+          document.getElementById('loading').textContent = "❌ Failed to load component data";
+          document.getElementById('loading').style.color = "red";
+          document.getElementById('product-table').style.display = 'none';
+          document.getElementById('add-row-btn').style.display = 'none';
           console.error("Fetch failed:", err);
-          alert("❌ Failed to load component data");
         });
     };
 
+    // Fill the select with component options
     function fillSelect(select, data) {
       select.innerHTML = `<option value="">-- Select --</option>`;
       data.forEach(([id, name]) => {
@@ -105,18 +122,21 @@
       });
     }
 
+    // Handle component selection change
     function onComponentChange(select) {
       const code = select.value;
       const row = select.closest("tr");
       const nameCell = row.querySelector(".component-name");
-      const qtyInput = row.cells[2].querySelector("input");
-      const dateInput = row.cells[3].querySelector("input");
+      const qtyInput = row.querySelector("input[type='number']");
+      const dateInput = row.querySelector("input[type='date']");
 
       if (!code) {
         nameCell.textContent = "";
         nameCell.className = "component-name";
         qtyInput.disabled = true;
         dateInput.disabled = true;
+        qtyInput.value = "";
+        dateInput.value = "";
         return;
       }
 
@@ -127,6 +147,8 @@
         nameCell.className = "component-name error";
         qtyInput.disabled = true;
         dateInput.disabled = true;
+        qtyInput.value = "";
+        dateInput.value = "";
       } else {
         nameCell.textContent = match[1];
         nameCell.className = "component-name";
@@ -135,6 +157,7 @@
       }
     }
 
+    // Add a new row to the table
     function addRow() {
       const tbody = document.querySelector("#product-table tbody");
       const newRow = tbody.insertRow();
@@ -148,11 +171,23 @@
         <td><span class="component-name"></span></td>
         <td><input type="number" min="1" placeholder="Qty" disabled required></td>
         <td><input type="date" disabled required></td>
+        <td><button type="button" onclick="removeRow(this)" title="Remove this row">🗑️</button></td>
       `;
 
       const select = newRow.querySelector("select");
       fillSelect(select, componentOptions);
     }
+
+    // Remove a row from the table
+    function removeRow(btn) {
+      const row = btn.closest("tr");
+      row.parentNode.removeChild(row);
+    }
+
+    // Attach addRow to the button
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('add-row-btn').onclick = addRow;
+    });
   </script>
 
 </body>
