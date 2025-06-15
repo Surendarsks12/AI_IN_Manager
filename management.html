@@ -75,33 +75,22 @@
       </tr>
     </thead>
     <tbody>
-      <tr>
-        <td>
-          <select onchange="onComponentChange(this)">
-            <option value="">-- Select --</option>
-          </select>
-        </td>
-        <td><span class="component-name"></span></td>
-        <td><input type="number" min="1" placeholder="Qty" disabled required></td>
-        <td><input type="date" disabled required></td>
-      </tr>
+      <!-- Initial Row -->
     </tbody>
   </table>
 
   <button onclick="addRow()">➕ Add Another Product</button>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPgtjHjEB6kEsdSE4bn4BfMalnp9f1RIcQQd8Mc-JGeVNBNaG6bAE3n98QXFqKZZvlGw/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxk8idWahHdZJCz_2wgP_2Qn4WmQsMMJXT3urxr0Wle10-D7wSduuO-6yjmC9lHHs5AcQ/exec";
     let componentOptions = [];
 
-    // Load component data on page load
     window.onload = function () {
       fetch(SCRIPT_URL)
         .then(res => res.json())
         .then(data => {
           componentOptions = data;
-          const firstSelect = document.querySelector("select");
-          fillSelect(firstSelect, componentOptions);
+          addRow(); // Add first row after data is loaded
         });
     };
 
@@ -129,7 +118,7 @@
         return;
       }
 
-      const match = componentOptions.find(([id, _]) => id === code);
+      const match = componentOptions.find(([id]) => id === code);
 
       if (!match) {
         nameCell.textContent = "❌ Invalid Component ID";
@@ -146,7 +135,7 @@
 
     function addRow() {
       const tbody = document.getElementById("product-table").querySelector("tbody");
-      const newRow = tbody.insertRow();
+      const newRow = document.createElement("tr");
 
       newRow.innerHTML = `
         <td>
@@ -159,6 +148,8 @@
         <td><input type="date" disabled required></td>
       `;
 
+      tbody.appendChild(newRow);
+
       const select = newRow.querySelector("select");
       fillSelect(select, componentOptions);
     }
@@ -166,3 +157,4 @@
 
 </body>
 </html>
+
