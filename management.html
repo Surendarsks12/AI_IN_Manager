@@ -107,24 +107,24 @@
       });
     }
 
-    function onComponentChange(select) {
-      const code = select.value;
-      const row = select.closest("tr");
-      const qtyInput = row.querySelector("input[type='number']");
-      const dateInput = row.querySelector("input[type='date']");
+   function onComponentChange(select) {
+  const code = select.value;
+  const row = select.closest("tr");
+  const qtyInput = row.querySelector("input[type='number']");
+  const dateInput = row.querySelector("input[type='date']");
 
-      const valid = componentOptions.some(([id]) => id === code);
+  const valid = componentOptions.some(([id]) => String(id) === String(code));
 
-      if (!code || !valid) {
-        qtyInput.disabled = true;
-        dateInput.disabled = true;
-        qtyInput.value = "";
-        dateInput.value = "";
-      } else {
-        qtyInput.disabled = false;
-        dateInput.disabled = false;
-      }
-    }
+  if (!code || !valid) {
+    qtyInput.disabled = true;
+    dateInput.disabled = true;
+    qtyInput.value = "";
+    dateInput.value = "";
+  } else {
+    qtyInput.disabled = false;
+    dateInput.disabled = false;
+  }
+}
 
     function addRow() {
       const tbody = document.querySelector("#product-table tbody");
