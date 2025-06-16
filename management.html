@@ -31,13 +31,6 @@
       padding: 6px;
       box-sizing: border-box;
     }
-    .component-name {
-      font-weight: bold;
-      color: green;
-    }
-    .component-name.error {
-      color: red;
-    }
     button {
       padding: 10px 20px;
       margin-top: 20px;
@@ -69,26 +62,21 @@
     <thead>
       <tr>
         <th>Component Code</th>
-        <th>Component Name</th>
         <th>Quantity</th>
         <th>Delivery Date</th>
         <th>Remove</th>
       </tr>
     </thead>
     <tbody>
-      <!-- Rows will be added after data loads -->
     </tbody>
   </table>
-
   <button id="add-row-btn" style="display:none;">➕ Add Another Product</button>
 
   <script>
-    // ✅ Use your deployed script URL
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
 
     let componentOptions = [];
 
-    // Fetch component data on load
     window.onload = function () {
       fetch(SCRIPT_URL)
         .then(res => res.json())
@@ -100,18 +88,15 @@
           document.getElementById('loading').style.display = 'none';
           document.getElementById('product-table').style.display = '';
           document.getElementById('add-row-btn').style.display = '';
-          addRow(); // Only after data loaded
+          addRow(); // Add initial row after loading
         })
         .catch(err => {
           document.getElementById('loading').textContent = "❌ Failed to load component data";
           document.getElementById('loading').style.color = "red";
-          document.getElementById('product-table').style.display = 'none';
-          document.getElementById('add-row-btn').style.display = 'none';
           console.error("Fetch failed:", err);
         });
     };
 
-    // Fill the select with component options
     function fillSelect(select, data) {
       select.innerHTML = `<option value="">-- Select --</option>`;
       data.forEach(([id, name]) => {
@@ -122,42 +107,25 @@
       });
     }
 
-    // Handle component selection change
     function onComponentChange(select) {
       const code = select.value;
       const row = select.closest("tr");
-      const nameCell = row.querySelector(".component-name");
       const qtyInput = row.querySelector("input[type='number']");
       const dateInput = row.querySelector("input[type='date']");
 
-      if (!code) {
-        nameCell.textContent = "";
-        nameCell.className = "component-name";
-        qtyInput.disabled = true;
-        dateInput.disabled = true;
-        qtyInput.value = "";
-        dateInput.value = "";
-        return;
-      }
+      const valid = componentOptions.some(([id]) => id === code);
 
-      const match = componentOptions.find(([id]) => id === code);
-
-      if (!match) {
-        nameCell.textContent = "❌ Invalid Component ID";
-        nameCell.className = "component-name error";
+      if (!code || !valid) {
         qtyInput.disabled = true;
         dateInput.disabled = true;
         qtyInput.value = "";
         dateInput.value = "";
       } else {
-        nameCell.textContent = match[1];
-        nameCell.className = "component-name";
         qtyInput.disabled = false;
         dateInput.disabled = false;
       }
     }
 
-    // Add a new row to the table
     function addRow() {
       const tbody = document.querySelector("#product-table tbody");
       const newRow = tbody.insertRow();
@@ -168,7 +136,6 @@
             <option value="">-- Select --</option>
           </select>
         </td>
-        <td><span class="component-name"></span></td>
         <td><input type="number" min="1" placeholder="Qty" disabled required></td>
         <td><input type="date" disabled required></td>
         <td><button type="button" onclick="removeRow(this)" title="Remove this row">🗑️</button></td>
@@ -178,13 +145,11 @@
       fillSelect(select, componentOptions);
     }
 
-    // Remove a row from the table
     function removeRow(btn) {
       const row = btn.closest("tr");
       row.parentNode.removeChild(row);
     }
 
-    // Attach addRow to the button
     document.addEventListener('DOMContentLoaded', function() {
       document.getElementById('add-row-btn').onclick = addRow;
     });
