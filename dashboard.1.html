@@ -4,8 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Production Allocation</title>
-      <h2 class="text-lg font-bold text-center flex-1 pr-12 text-[#111418]">Dashboard</h2>
-    <h2 class="text-[22px] font-bold px-4 pt-5 pb-3 text-[#111418]">Options</h2>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?display=swap&family=Inter:wght@400;500;700;900&family=Noto+Sans:wght@400;500;700;900"
+    />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  </head>
+  <body class="min-h-screen bg-white font-['Inter','Noto Sans',sans-serif] flex flex-col justify-between">
+    <!-- Header -->
+    <div class="bg-white p-4 pb-2 flex items-center justify-between">
+      <h2 >Dashboard</h2>
+    </div>
+    <!-- Section Title -->
+    <h2 >Options</h2>
 
     <!-- Grid of Cards -->
     <div class="grid grid-cols-[repeat(auto-fit,minmax(158px,1fr))] gap-3 p-4">
@@ -21,21 +33,12 @@
         <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#111418]" fill="currentColor" viewBox="0 0 256 256">
           <path d="M240,208H224V96a16,16,0,0,0-16-16H144V32a16,16,0,0,0-24.88-13.32L39.12,72A16,16,0,0,0,32,85.34V208H16a8,8,0,0,0,0,16H240a8,8,0,0,0,0-16ZM208,96V208H144V96ZM48,85.34,128,32V208H48Z"/>
         </svg>
-        <h2 class="text-base font-bold text-[#111418]">Real Estate</h2>
-      </a>
-
-      <!-- Add other cards (Manufacturing, Healthcare, etc.) here -->
-      <!-- You can paste the rest of your original industry cards here with <a href="#"> ... </a> wrapping -->
-
-      <!-- Example: Manufacturing -->
-      <a href="#" class="flex items-center gap-3 rounded-lg border border-[#dbe0e6] bg-white p-4">
-        <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-[#111418]" fill="currentColor" viewBox="0 0 256 256">
-          <path d="M116,176a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16h28A8,8,0,0,1,116,176Zm60-8H148a8,8,0,0,0,0,16h28a8,8,0,0,0,0-16Zm72,48a8,8,0,0,1-8,8H16a8,8,0,0,1,0-16H32V88a8,8,0,0,1,12.8-6.4L96,120V88a8,8,0,0,1,12.8-6.4l38.74,29.05L159.1,29.74A16.08,16.08,0,0,1,174.94,16h18.12A16.08,16.08,0,0,1,208.9,29.74l15,105.13s.08.78.08,1.13v72h16A8,8,0,0,1,248,216Z"/>
-        </svg>
-        <h2 class="text-base font-bold text-[#111418]">Manufacturing</h2>
-      </a>
-    </div>
-
+  <style>
+    body{
+      font: 'Times New Roman'
+    }
+    
+  </style>
     <!-- Bottom Navigation -->
     <div class="border-t border-[#f0f2f5] bg-white px-4 pb-3 pt-2 flex gap-2">
       <a href="#" class="flex-1 flex flex-col items-center justify-end gap-1 text-[#111418]">
