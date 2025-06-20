@@ -23,10 +23,7 @@
       background-color: #555;
       color: white;
     }
-    input[type="date"],
-    input[type="text"],
-    input[type="number"],
-    select {
+    input[type="date"], input[type="number"], select {
       width: 95%;
       padding: 6px;
       box-sizing: border-box;
@@ -71,12 +68,12 @@
 
   <button id="add-row-btn" style="display:none;">➕ Add Another Product</button>
   <button id="allocate-btn" style="display:none;">📦 Allocate</button>
-  <button onclick="window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE/edit#gid=ALLOCATION_GID', '_blank')">📄 View Allocation Sheet</button>
+  <button onclick="window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=SHEET_GID', '_blank')">📄 View Allocation Sheet</button>
   <button onclick="window.print()">🖨️ Print Allocation</button>
 
   <script>
     const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
-    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbxrRjSVjAYOOSu8wQj71bSWsyjlFqRT4_ylYviaZFX2Xlo5BQ6ecK5AnD84kVnWrlrg4Q/exec";
+    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbz-uBXDCZycsgIljjl09_Gh7wLKktwFh4_LWHrEXUGk_8ZSMUs5orCAC8OPF7JDNLeXEw/exec";
 
     let componentOptions = [];
 
@@ -126,17 +123,14 @@
 
       newRow.innerHTML = `
         <td>
-          <select onchange="onComponentChange(this)">
-            <option value="">-- Select --</option>
-          </select>
+          <select onchange="onComponentChange(this)"><option value="">-- Select --</option></select>
         </td>
         <td><input type="number" min="1" placeholder="Qty" disabled required></td>
         <td><input type="date" disabled required></td>
         <td><button type="button" onclick="removeRow(this)">🗑</button></td>
       `;
 
-      const select = newRow.querySelector("select");
-      fillSelect(select, componentOptions);
+      fillSelect(newRow.querySelector("select"), componentOptions);
     }
 
     function removeRow(btn) {
@@ -149,10 +143,7 @@
       const rows = Array.from(document.querySelectorAll("#product-table tbody tr"));
       const startDate = document.getElementById("start-date").value;
 
-      if (!startDate) {
-        alert("❗ Please select a start date.");
-        return;
-      }
+      if (!startDate) return alert("❗ Select a start date.");
 
       const data = rows.map(row => ({
         component: row.querySelector("select").value,
@@ -160,28 +151,18 @@
         delivery: row.querySelector("input[type='date']").value
       }));
 
-      if (data.some(d => !d.component || !d.quantity || !d.delivery)) {
-        alert("❗ Please fill all fields before allocating.");
-        return;
-      }
-
       fetch(ALLOCATE_URL, {
         method: 'POST',
         body: JSON.stringify({ startDate, data }),
         headers: { 'Content-Type': 'application/json' }
       })
       .then(res => res.text())
-      .then(res => {
-        if (res.toLowerCase().includes("success") || res.includes("✅")) {
-          alert("✅ Allocation completed!\n" + res);
-        } else {
-          alert("❌ Allocation failed!\n" + res);
-        }
-      })
-      .catch(err => alert("❌ Allocation error! Check console.\n" + err));
+      .then(msg => alert("✅ " + msg))
+      .catch(err => {
+        console.error(err);
+        alert("❌ Allocation error. See console for details.");
+      });
     };
   </script>
-
 </body>
 </html>
-
