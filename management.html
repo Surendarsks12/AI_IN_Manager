@@ -76,7 +76,7 @@
 
   <script>
     const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
-    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbzDkS3JlQZ34PwlRvMpztByHCiStPlaIUnjc2DRBcWe4aqJDVMSUlzlBjXewVAlfVzMUQ/exec";
+    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbxrRjSVjAYOOSu8wQj71bSWsyjlFqRT4_ylYviaZFX2Xlo5BQ6ecK5AnD84kVnWrlrg4Q/exec";
 
     let componentOptions = [];
 
@@ -149,11 +149,21 @@
       const rows = Array.from(document.querySelectorAll("#product-table tbody tr"));
       const startDate = document.getElementById("start-date").value;
 
+      if (!startDate) {
+        alert("❗ Please select a start date.");
+        return;
+      }
+
       const data = rows.map(row => ({
         component: row.querySelector("select").value,
         quantity: row.querySelector("input[type='number']").value,
         delivery: row.querySelector("input[type='date']").value
       }));
+
+      if (data.some(d => !d.component || !d.quantity || !d.delivery)) {
+        alert("❗ Please fill all fields before allocating.");
+        return;
+      }
 
       fetch(ALLOCATE_URL, {
         method: 'POST',
@@ -161,10 +171,17 @@
         headers: { 'Content-Type': 'application/json' }
       })
       .then(res => res.text())
-      .then(res => alert("✅ Allocation completed!\n" + res))
-      .catch(err => alert("❌ Allocation failed!"));
+      .then(res => {
+        if (res.toLowerCase().includes("success") || res.includes("✅")) {
+          alert("✅ Allocation completed!\n" + res);
+        } else {
+          alert("❌ Allocation failed!\n" + res);
+        }
+      })
+      .catch(err => alert("❌ Allocation error! Check console.\n" + err));
     };
   </script>
 
 </body>
 </html>
+
