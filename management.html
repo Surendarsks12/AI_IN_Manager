@@ -71,15 +71,17 @@
 
   <button id="add-row-btn" style="display:none;">➕ Add Another Product</button>
   <button id="allocate-btn" style="display:none;">📦 Allocate</button>
-  <button onclick="window.open('https://docs.google.com/spreadsheets/d/your_sheet_id_here/edit#gid=allocation_gid', '_blank')">📄 View Allocation Sheet</button>
+  <button onclick="window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID_HERE/edit#gid=ALLOCATION_GID', '_blank')">📄 View Allocation Sheet</button>
   <button onclick="window.print()">🖨️ Print Allocation</button>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwGpi0lgCdQeppJgG0eFKwRowBJhBhjFPwC289mfeY4F7OzGaHANSovHD_Ey9_-0MTz_A/exec";
+    const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
+    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbwGpi0lgCdQeppJgG0eFKwRowBJhBhjFPwC289mfeY4F7OzGaHANSovHD_Ey9_-0MTz_A/exec";
+
     let componentOptions = [];
 
     window.onload = () => {
-      fetch(SCRIPT_URL)
+      fetch(DATA_FETCH_URL)
         .then(res => res.json())
         .then(data => {
           componentOptions = data;
@@ -110,14 +112,11 @@
       const dateInput = row.querySelector("input[type='date']");
       const valid = componentOptions.some(([id]) => id == select.value);
 
+      qtyInput.disabled = !valid;
+      dateInput.disabled = !valid;
       if (!valid) {
-        qtyInput.disabled = true;
-        dateInput.disabled = true;
         qtyInput.value = "";
         dateInput.value = "";
-      } else {
-        qtyInput.disabled = false;
-        dateInput.disabled = false;
       }
     }
 
@@ -133,7 +132,7 @@
         </td>
         <td><input type="number" min="1" placeholder="Qty" disabled required></td>
         <td><input type="date" disabled required></td>
-        <td><button onclick="removeRow(this)">🗑️</button></td>
+        <td><button type="button" onclick="removeRow(this)">🗑</button></td>
       `;
 
       const select = newRow.querySelector("select");
@@ -156,7 +155,7 @@
         delivery: row.querySelector("input[type='date']").value
       }));
 
-      fetch(SCRIPT_URL, {
+      fetch(ALLOCATE_URL, {
         method: 'POST',
         body: JSON.stringify({ startDate, data }),
         headers: { 'Content-Type': 'application/json' }
