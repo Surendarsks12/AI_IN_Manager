@@ -71,9 +71,8 @@
 </head>
 <body>
 
-  <h2>AC AUTOMATIX - Production Log Sheet</h2>
+  <h2>Production Log Sheet</h2>
 
-  <!-- SHIFT INFO -->
   <div class="top-info">
     <label>Shift Date: <input type="date" id="shiftDate"></label>
     <label>Shift Start Time: <input type="time" id="shiftStart"></label>
@@ -92,7 +91,6 @@
     <button onclick="fillRowsBySlot()">Apply to Slot Range</button>
   </div>
 
-  <!-- LOG TABLE -->
   <table id="logTable">
     <thead>
       <tr>
@@ -113,7 +111,6 @@
     </tbody>
   </table>
 
-  <!-- FOOTER -->
   <div class="footer-info">
     <label>Accepted Qty: <input type="number"></label>
     <label>Rework Qty: <input type="number"></label>
@@ -125,7 +122,6 @@
     <p>Approved By (Name & Signature): ________________________________</p>
   </div>
 
-  <!-- SCRIPT -->
   <script>
     function generateRows() {
       const start = document.getElementById("shiftStart").value;
