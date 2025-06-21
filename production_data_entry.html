@@ -1,140 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Production Log Sheet</title>
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid black; padding: 8px; text-align: center; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: center; }
     input, select { width: 100%; box-sizing: border-box; }
     .top-info, .range-entry { display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 20px; }
-    button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; }
-    button:hover { background-color: #45a049; }
+    button { padding: 10px 20px; background: green; color: #fff; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px; }
+    button:hover { background-color: darkgreen; }
   </style>
 </head>
 <body>
+  <h2>Production Log Sheet</h2>
+  <div class="top-info">
+    <label>Shift Date: <input type="date" id="shiftDate" /></label>
+    <label>Shift Start: <input type="time" id="shiftStart" /></label>
+    <label>Shift End: <input type="time" id="shiftEnd" /></label>
+    <label>Machine Name: <input type="text" id="machineName" /></label>
+    <label>Employee Name: <input type="text" id="employeeName" /></label>
+    <button onclick="generateSheet()">Generate Sheet</button>
+  </div>
 
-<h2>Production Log Sheet</h2>
+  <div class="range-entry">
+    <label>From Slot: <input type="number" id="slotStart" min="1" /></label>
+    <label>To Slot: <input type="number" id="slotEnd" min="1" /></label>
+    <label>Drawing No: <input type="text" id="rangeDrawing" /></label>
+    <label>Operation: <input type="text" id="rangeOperation" /></label>
+    <button onclick="fillSlots()">Apply to Slot Range</button>
+  </div>
 
-<div class="top-info">
-  <label>Employee Name: <input type="text" id="employeeName"></label>
-  <label>Shift Date: <input type="date" id="shiftDate"></label>
-  <label>Shift Start Time: <input type="time" id="shiftStart"></label>
-  <label>Shift End Time: <input type="time" id="shiftEnd"></label>
-  <label>Machine Name: <input type="text" id="machineName" placeholder="e.g., T-1"></label>
-  <button onclick="generateRows()">Generate Sheet</button>
-</div>
+  <table id="logTable">
+    <thead>
+      <tr>
+        <th>Slot</th><th>Time In</th><th>Time Out</th><th>Drawing No.</th><th>Operation</th>
+        <th>Setting Time (min)</th><th>Idle Time (min)</th><th>Working Time (hr)</th><th>Qty</th><th>Remarks</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-<h3>Fill Operation & Drawing for Slot Range</h3>
-<div class="range-entry">
-  <label>From Slot #: <input type="number" id="slotStart" min="1"></label>
-  <label>To Slot #: <input type="number" id="slotEnd" min="1"></label>
-  <label>Drawing No.: <input type="text" id="rangeDrawing"></label>
-  <label>Operation: <input type="text" id="rangeOperation"></label>
-  <button onclick="fillRowsBySlot()">Apply to Slot Range</button>
-</div>
+  <button onclick="submitToDrive()">Submit & Save to PDF</button>
 
-<table id="logTable">
-  <thead>
-    <tr>
-      <th>Slot No.</th><th>Time In</th><th>Time Out</th><th>Drawing No.</th><th>Operation</th>
-      <th>Setting Time (mins)</th><th>Idle Time (mins)</th><th>Working Time (hrs)</th>
-      <th>Processed Qty</th><th>Remarks</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
-
-<button onclick="submitToPDF()">Submit & Save to PDF</button>
-
-<script>
-function formatTime(date) {
-  return String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0');
-}
-
-function generateRows() {
-  const start = document.getElementById("shiftStart").value;
-  const end = document.getElementById("shiftEnd").value;
-  const tbody = document.querySelector("#logTable tbody");
-  tbody.innerHTML = "";
-
-  let startTime = new Date(`1970-01-01T${start}:00`);
-  let endTime = new Date(`1970-01-01T${end}:00`);
-  if (endTime <= startTime) endTime.setDate(endTime.getDate() + 1);
-
-  let currentTime = new Date(startTime);
-  let slot = 1;
-
-  while (currentTime < endTime) {
-    const nextTime = new Date(currentTime.getTime() + 3600000);
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td><input value="${slot}" readonly></td>
-      <td><input type="time" value="${formatTime(currentTime)}" readonly></td>
-      <td><input type="time" value="${formatTime(nextTime)}" readonly></td>
-      <td><input type="text"></td><td><input type="text"></td>
-      <td><input type="number" min="0" onchange="calcWorking(this)"></td>
-      <td><input type="number" min="0" onchange="calcWorking(this)"></td>
-      <td><input type="text" readonly></td>
-      <td><input type="number"></td><td><input type="text"></td>
-    `;
-    tbody.appendChild(row);
-    currentTime = nextTime;
-    slot++;
-  }
-}
-
-function calcWorking(el) {
-  const row = el.closest("tr");
-  const set = parseFloat(row.children[5].children[0].value) || 0;
-  const idle = parseFloat(row.children[6].children[0].value) || 0;
-  const working = 1 - ((set + idle) / 60);
-  row.children[7].children[0].value = working > 0 ? working.toFixed(2) : 0;
-}
-
-function fillRowsBySlot() {
-  const from = parseInt(document.getElementById("slotStart").value);
-  const to = parseInt(document.getElementById("slotEnd").value);
-  const drawing = document.getElementById("rangeDrawing").value;
-  const op = document.getElementById("rangeOperation").value;
-  const rows = document.querySelectorAll("#logTable tbody tr");
-
-  rows.forEach((row, i) => {
-    const slot = i + 1;
-    if (slot >= from && slot <= to) {
-      row.children[3].children[0].value = drawing;
-      row.children[4].children[0].value = op;
+  <script>
+    function formatTime(date) {
+      const h = String(date.getHours()).padStart(2, '0');
+      const m = String(date.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
     }
-  });
-}
 
-function submitToPDF() {
-  const employeeName = document.getElementById("employeeName").value;
-  const shiftDate = document.getElementById("shiftDate").value;
-  const shiftStart = document.getElementById("shiftStart").value;
-  const tableHTML = document.getElementById("logTable").outerHTML;
+    function generateSheet() {
+      const start = document.getElementById('shiftStart').value;
+      const end = document.getElementById('shiftEnd').value;
+      const tbody = document.querySelector('#logTable tbody');
+      tbody.innerHTML = '';
 
-  if (!employeeName || !shiftDate || !shiftStart) {
-    alert("Please fill in Employee Name, Shift Date and Start Time.");
-    return;
-  }
+      let startTime = new Date(`1970-01-01T${start}`);
+      let endTime = new Date(`1970-01-01T${end}`);
+      if (endTime <= startTime) endTime.setDate(endTime.getDate() + 1);
 
-  const shiftHour = parseInt(shiftStart.split(":")[0]);
-  let shiftNum = 1;
-  if (shiftHour >= 8 && shiftHour < 16) shiftNum = 2;
-  else if (shiftHour >= 16 || shiftHour < 1) shiftNum = 3;
+      let current = new Date(startTime);
+      let slot = 1;
+      while (current < endTime) {
+        const next = new Date(current.getTime() + 60 * 60000);
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><input value="${slot}" readonly></td>
+          <td><input type="time" value="${formatTime(current)}" readonly></td>
+          <td><input type="time" value="${formatTime(next)}" readonly></td>
+          <td><input></td><td><input></td>
+          <td><input type="number" onchange="calcWorking(this)"></td>
+          <td><input type="number" onchange="calcWorking(this)"></td>
+          <td><input readonly></td>
+          <td><input type="number"></td>
+          <td><input></td>
+        `;
+        tbody.appendChild(row);
+        current = next;
+        slot++;
+      }
+    }
 
-  fetch("https://script.google.com/macros/s/AKfycbxf9Z-u_mFzTTPVRCRDDqJ-Z8gekT4sVK4ygH5D3EzOKAKCA34LQRhg78iNx6CraiMX/exec", {
-    method: "POST",
-    body: JSON.stringify({ employeeName, shiftDate, shiftNum, tableHTML }),
-    headers: { "Content-Type": "application/json" }
-  })
-  .then(res => res.text())
-  .then(msg => alert("Saved as PDF in Drive!"))
-  .catch(err => alert("Failed: " + err.message));
-}
-</script>
+    function calcWorking(el) {
+      const row = el.closest('tr');
+      const set = parseFloat(row.children[5].children[0].value) || 0;
+      const idle = parseFloat(row.children[6].children[0].value) || 0;
+      const working = 1 - (set + idle) / 60;
+      row.children[7].children[0].value = working > 0 ? working.toFixed(2) : 0;
+    }
 
+    function fillSlots() {
+      const from = parseInt(document.getElementById("slotStart").value);
+      const to = parseInt(document.getElementById("slotEnd").value);
+      const drawing = document.getElementById("rangeDrawing").value;
+      const op = document.getElementById("rangeOperation").value;
+      const rows = document.querySelectorAll("#logTable tbody tr");
+      rows.forEach((row, i) => {
+        if (i + 1 >= from && i + 1 <= to) {
+          row.children[3].children[0].value = drawing;
+          row.children[4].children[0].value = op;
+        }
+      });
+    }
+
+    function submitToDrive() {
+      const rows = document.querySelectorAll("#logTable tbody tr");
+      const shiftDate = document.getElementById("shiftDate").value;
+      const machine = document.getElementById("machineName").value;
+      const empName = document.getElementById("employeeName").value;
+
+      const data = {
+        date: shiftDate,
+        machine: machine,
+        employee: empName,
+        rows: Array.from(rows).map(r => ({
+          slot: r.children[0].children[0].value,
+          timeIn: r.children[1].children[0].value,
+          timeOut: r.children[2].children[0].value,
+          drawing: r.children[3].children[0].value,
+          operation: r.children[4].children[0].value,
+          setting: r.children[5].children[0].value,
+          idle: r.children[6].children[0].value,
+          working: r.children[7].children[0].value,
+          qty: r.children[8].children[0].value,
+          remarks: r.children[9].children[0].value
+        })
+      )};
+
+      fetch('https://script.google.com/macros/s/AKfycby-ys1ESgRw8zzTJkctyAuMAowiKLw1LrDfrBK3cmOW6QxFwxxLN0q-WMBX1LRZOxkA/exec', {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(res => res.text())
+      .then(msg => alert("Submitted & Saved to Drive!"))
+      .catch(err => alert("Failed to submit: " + err.message));
+    }
+  </script>
 </body>
 </html>
