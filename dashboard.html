@@ -17,6 +17,11 @@
 Contact your organisation for more details
 </em></p><br>
 <a href="e_dashboard.html">Employee login</a><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<!-- Add this somewhere in the body -->
+<button onclick="logout()" style="position: fixed; top: 20px; right: 20px;">Logout</button>
+
+
 </body>
   <script>
     document.getElementById("managementForm").addEventListener("submit", function(event) {
@@ -30,6 +35,25 @@ Contact your organisation for more details
       }
     });
   </script>
+
+<script>
+  // Redirect if not logged in
+  if (localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "index.html"; // redirect to login
+  }
+</script>
+<button onclick="logout()">Logout</button>
+
+<script>
+  function logout() {
+    localStorage.removeItem("loggedIn");
+    window.location.href = "index.html";
+  }
+</script>
+
+
+
+    
 <style>
     body{
     text-align: center;
