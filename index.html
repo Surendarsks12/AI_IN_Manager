@@ -50,9 +50,12 @@ body {
     fetch("https://script.google.com/macros/s/AKfycbyPuojERNQGneV9zYDbDNucKQcA7cRr9eCiulOnl0Z4dRVPCyrq-6sR8ExT6IrnM5UP-g/exec?email=" + email + "&password=" + password)
       .then((res) => res.text())
       .then((data) => {
-        if (data === "success") {
-          window.location.href = "dashboard.html";
-        } else {
+      if (data === "success") {
+  localStorage.setItem("loggedIn", "true");
+  localStorage.setItem("userEmail", email); // optional: save email
+  window.location.href = "dashboard.html";
+}
+        else {
           alert("Invalid email or password!");
         }
       })
@@ -62,24 +65,7 @@ body {
       });
   });
 </script>
-
-<!-- index.html -->
-<script>
-  function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    // Example login check (in reality, you'd verify from server or Google Sheets via Apps Script)
-    if (email === "admin@example.com" && password === "admin123") {
-      localStorage.setItem("loggedIn", "true");
-      window.location.href = "dashboard.html";
-    } else {
-      alert("Invalid credentials");
-    }
-  }
-</script>
-
-  
+ 
 <style>
   body{
   text-align: center;
