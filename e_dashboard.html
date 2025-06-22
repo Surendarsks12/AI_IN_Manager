@@ -27,23 +27,35 @@
     .nav-button:hover {
       background-color: #45a049;
     }
+    .img-button {
+  width: 300px;
+  height: auto;
+  margin: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+}
+.img-button:hover {
+  transform: scale(1.05);
+}
+
 </style>
 <body>
 <h1>Welcome to Employee Dashboard</h1>
-<button class="nav-button" onclick="window.location.href='production_data_entry.html'">Production data entry</button><br><br>
+<a href="production_data_entry.html">
+  <img src="https://raw.githubusercontent.com/Surendarsks12/AI_IN_Manager/main/dashboard_background.jpg?raw=true" alt="Production Entry" class="img-button">
+</a>
+
+    
 <button class="nav-button" onclick="window.location.href='leave_entry.html'">Leave Entry</button><br><br>
 <button class="nav-button" onclick="window.location.href='query.html'">Query entry</button><br><br>
 <button class="nav-button" onclick="window.location.href='view_production_entries.html'">View previous Production entries</button>
 
-
-<!-- Show logged-in user info and logout -->
 <script>
-  // Redirect to login if not logged in
   if (localStorage.getItem("loggedIn") !== "true") {
     window.location.href = "index.html";
   }
 
-  // Show logged in email
   const userEmail = localStorage.getItem("userEmail");
   const infoDiv = document.createElement("div");
   infoDiv.textContent = "Logged in as: " + userEmail;
@@ -55,7 +67,7 @@
   infoDiv.style.color = "#333";
   document.body.appendChild(infoDiv);
 
-  // Create logout button
+
   const logoutBtn = document.createElement("button");
   logoutBtn.textContent = "Logout";
   logoutBtn.style.position = "fixed";
