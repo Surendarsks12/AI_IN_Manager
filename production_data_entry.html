@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>Production Log Sheet</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
+    body { font-family: 'Times New Roman'; 
+          padding: 20px; }
     h2 { text-align: center; }
     table { width: 100%;
            border-collapse: collapse;
@@ -38,7 +39,7 @@
 <body>
   
 <h2>Production Log Sheet</h2>
-<div id="user-info" style="font-weight: lighter; margin-bottom: 10px; font-style: italic; font-size: 5px;"></div>
+<div id="user-info" style="font-weight: lighter; margin-bottom: 10px; font-style: italic; font-size: 10px;"></div>
 <script>
   if (localStorage.getItem("loggedIn") !== "true") {
     window.location.href = "index.html";
@@ -58,10 +59,10 @@
 
 <h3>Fill Operation & Drawing for Slot Range</h3>
 <div class="range-entry">
-  <label>From Slot #: <input type="number" id="slotStart" min="1"></label>
-  <label>To Slot #: <input type="number" id="slotEnd" min="1"></label>
+  <label>From Slot: <input type="number" id="slotStart" min="1"></label>
+  <label>To Slot: <input type="number" id="slotEnd" min="1"></label>
   <label>Drawing No.: <input type="text" id="rangeDrawing"></label>
-  <label>Operation: <input type="text" id="rangeOperation"></label>
+  <label>Operation: <input type="number" id="rangeOperation"></label>
   <button onclick="fillRowsBySlot()">Apply to Slot Range</button>
 </div>
 
