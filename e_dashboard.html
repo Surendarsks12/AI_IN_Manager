@@ -34,5 +34,47 @@
 <button class="nav-button" onclick="window.location.href='leave_entry.html'">Leave Entry</button><br><br>
 <button class="nav-button" onclick="window.location.href='query.html'">Query entry</button><br><br>
 <button class="nav-button" onclick="window.location.href='view_production_entries.html'">View previous Production entries</button>
+
+
+<!-- Show logged-in user info and logout -->
+<script>
+  // Redirect to login if not logged in
+  if (localStorage.getItem("loggedIn") !== "true") {
+    window.location.href = "index.html";
+  }
+
+  // Show logged in email
+  const userEmail = localStorage.getItem("userEmail");
+  const infoDiv = document.createElement("div");
+  infoDiv.textContent = "Logged in as: " + userEmail;
+  infoDiv.style.position = "fixed";
+  infoDiv.style.top = "10px";
+  infoDiv.style.left = "10px";
+  infoDiv.style.fontFamily = "Arial";
+  infoDiv.style.fontSize = "14px";
+  infoDiv.style.color = "#333";
+  document.body.appendChild(infoDiv);
+
+  // Create logout button
+  const logoutBtn = document.createElement("button");
+  logoutBtn.textContent = "Logout";
+  logoutBtn.style.position = "fixed";
+  logoutBtn.style.top = "10px";
+  logoutBtn.style.right = "10px";
+  logoutBtn.style.padding = "10px 15px";
+  logoutBtn.style.backgroundColor = "#e53935";
+  logoutBtn.style.color = "white";
+  logoutBtn.style.border = "none";
+  logoutBtn.style.borderRadius = "6px";
+  logoutBtn.style.cursor = "pointer";
+  logoutBtn.onclick = function() {
+    localStorage.removeItem("loggedIn");
+    localStorage.removeItem("userEmail");
+    window.location.href = "index.html";
+  };
+  document.body.appendChild(logoutBtn);
+</script>
+
+
 </body>
 </html>
