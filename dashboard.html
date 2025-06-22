@@ -30,8 +30,6 @@ Contact your organisation for more details
 ">
   Employee Login
 </a>
-
-<!-- First one (correct, styled and positioned) -->
 <button onclick="logout()" style="position: fixed; top: 20px; right: 20px;">Logout</button>
     
 </body>
@@ -49,13 +47,11 @@ Contact your organisation for more details
   </script>
 
 <script>
-  // Redirect if not logged in
   if (localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "index.html"; // redirect to login
+    window.location.href = "index.html"; 
   }
 </script>
-
-
+    
 <script>
   function logout() {
     localStorage.removeItem("loggedIn");
