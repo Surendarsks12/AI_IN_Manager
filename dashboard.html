@@ -31,7 +31,9 @@ Contact your organisation for more details
   Employee Login
 </a>
 
-
+<!-- First one (correct, styled and positioned) -->
+<button onclick="logout()" style="position: fixed; top: 20px; right: 20px;">Logout</button>
+    
 </body>
   <script>
     document.getElementById("managementForm").addEventListener("submit", function(event) {
@@ -52,7 +54,7 @@ Contact your organisation for more details
     window.location.href = "index.html"; // redirect to login
   }
 </script>
-<button onclick="logout()">Logout</button>
+
 
 <script>
   function logout() {
