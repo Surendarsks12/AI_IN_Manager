@@ -38,8 +38,17 @@
 <div class="range-entry">
   <label>From Slot: <input type="number" id="slotStart" min="1"></label>
   <label>To Slot: <input type="number" id="slotEnd" min="1"></label>
-  <label>Drawing No.: <input type="text" id="rangeDrawing"></label>
-  <label>Operation: <input type="text" id="rangeOperation"></label>
+  <label>Drawing No.:
+  <select id="rangeDrawing" onchange="updateOperations()">
+    <option value="">Select Drawing</option>
+  </select>
+</label>
+<label>Operation:
+  <select id="rangeOperation">
+    <option value="">Select Operation</option>
+  </select>
+</label>
+
   <button onclick="fillRowsBySlot()">Apply to Slot Range</button>
 </div>
 
@@ -62,6 +71,47 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
 <script>
+
+<script>
+let cycleTimeMap = {};
+let operationOptions = {};
+
+window.onload = () => {
+  fetch("https://script.google.com/macros/s/AKfycbytMFU5qjNk7Qzx4S24_dT4OcFZCS1anQZT28MuvvQCDC11eJggSjmBWXb1jaU0OqzJ/exec")
+    .then(res => res.json())
+    .then(data => {
+      cycleTimeMap = data;
+      operationOptions = data.options || {};
+      populateDrawingDropdown();
+    });
+};
+
+function populateDrawingDropdown() {
+  const drawingSelect = document.getElementById("rangeDrawing");
+  Object.keys(operationOptions).forEach(drawing => {
+    const opt = document.createElement("option");
+    opt.value = drawing;
+    opt.text = drawing;
+    drawingSelect.appendChild(opt);
+  });
+}
+
+function updateOperations() {
+  const drawing = document.getElementById("rangeDrawing").value;
+  const opSelect = document.getElementById("rangeOperation");
+  opSelect.innerHTML = "<option value=''>Select Operation</option>";
+
+  if (operationOptions[drawing]) {
+    operationOptions[drawing].forEach(op => {
+      const opt = document.createElement("option");
+      opt.value = op;
+      opt.text = op;
+      opSelect.appendChild(opt);
+    });
+  }
+}
+
+  
 function formatTime(date) {
   const hours = String(date.getHours()).padStart(2, '0');
   const mins = String(date.getMinutes()).padStart(2, '0');
@@ -146,8 +196,8 @@ function calculateEfficiency() {
         const workingTimeHrs = parseFloat(row.children[7].children[0].value) || 0;
         const workingMins = workingTimeHrs * 60;
 
-        const key = `${drawing}_${operation}`;
-        const cycleTime = parseFloat(cycleTimeData[key]) || 0;
+        const key = `${drawing}_${operation}`.toLowerCase();
+        const cycleTime = parseFloat(cycleTimeMap[key]) || 0;
 
         if (!drawing || !operation || !qty || !workingMins || !cycleTime) {
           row.children[10].children[0].value = "N/A";
