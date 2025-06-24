@@ -210,7 +210,7 @@ function calculateEfficiency() {
 
     
     const idealTime = qty * cycleTime;
-    const efficiency = (idealTime / workingMins) * 100;
+    const efficiency = (idealTime / WorkingTime) * 100;
     row.children[10].children[0].value = efficiency.toFixed(1);
     totalEfficiency += efficiency;
     count++;
