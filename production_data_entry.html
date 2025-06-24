@@ -201,11 +201,14 @@ function calculateEfficiency() {
     const key = `${Object.keys(componentIds).find(k => componentIds[k] === id)?.toLowerCase() || ""}_${op}`;
     const cycleTime = parseFloat(cycleTimeMap[key]) || 0;
 
-    if (!id || !op || !qty || !workingMins || !cycleTime) {
-      row.children[10].children[0].value = "N/A";
-      return;
-    }
 
+
+
+
+
+
+
+    
     const idealTime = qty * cycleTime;
     const efficiency = (idealTime / workingMins) * 100;
     row.children[10].children[0].value = efficiency.toFixed(1);
