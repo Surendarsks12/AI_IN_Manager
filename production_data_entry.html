@@ -75,14 +75,16 @@
 let cycleTimeMap = {};
 let operationOptions = {};
 let componentIds = {};
+let componentNames = {};
 
 window.onload = () => {
-  fetch("https://script.google.com/macros/s/AKfycbz-MZRMeoVKn2Hrc9WLPnuivjn-03vafTOHbhwM4csSGFbpb06lmOD0GfAEJhHpcMav/exec")
+  fetch("https://script.google.com/macros/s/AKfycbzRAMYIy9L2nzYgy_1qSSYWFctszMdRE2JqIytU_jQ8xCJZzNTrD7NccQN4eKNYAw72/exec")
     .then(res => res.json())
     .then(data => {
       cycleTimeMap = data;
       operationOptions = data.options || {};
       componentIds = data.componentIds || {};
+      componentNames = data.componentNames || {};
       populateDrawingDropdown();
     });
 };
@@ -198,19 +200,17 @@ function calculateEfficiency() {
     const workingTimeHrs = parseFloat(row.children[7].children[0].value) || 0;
     const workingMins = workingTimeHrs * 60;
 
-    const key = `${Object.keys(componentIds).find(k => componentIds[k] === id)?.toLowerCase() || ""}_${op}`;
+    const componentName = componentNames[id]?.toLowerCase() || "";
+    const key = `${componentName}_${op}`;
     const cycleTime = parseFloat(cycleTimeMap[key]) || 0;
 
+    if (!id || !op || !qty || !workingMins || !cycleTime) {
+      row.children[10].children[0].value = "N/A";
+      return;
+    }
 
-
-
-
-
-
-
-    
     const idealTime = qty * cycleTime;
-    const efficiency = (idealTime / WorkingTime) * 100;
+    const efficiency = (idealTime / workingMins) * 100;
     row.children[10].children[0].value = efficiency.toFixed(1);
     totalEfficiency += efficiency;
     count++;
@@ -234,7 +234,7 @@ function sendPDF() {
   html2pdf().from(element).outputPdf('datauristring').then(function(pdfDataUri) {
     const base64 = pdfDataUri.split(',')[1];
 
-    fetch('https://script.google.com/macros/s/AKfycbz-MZRMeoVKn2Hrc9WLPnuivjn-03vafTOHbhwM4csSGFbpb06lmOD0GfAEJhHpcMav/exec', {
+    fetch('https://script.google.com/macros/s/AKfycbx9RBw4yXWtXgFNdpdR46D9ELFinSWD7IEB_rwg7s1nbOhNDafXVaTQcDimKK2azfu0/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}`
