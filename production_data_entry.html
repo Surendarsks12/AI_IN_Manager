@@ -235,7 +235,18 @@ function calculateEfficiency() {
     count ? `Overall Efficiency: ${(totalEfficiency / count).toFixed(1)}%` : '';
 }
 
-const opt = {
+function sendPDF() {
+  const element = document.body;
+  const employee = prompt("Enter Employee ID:");
+  const shiftDate = document.getElementById("shiftDate").value;
+  const shift = prompt("Enter Shift Number (e.g., Shift-1):");
+
+  if (!employee || !shiftDate || !shift) {
+    alert("Please fill Employee ID, Shift Date and Shift Number.");
+    return;
+  }
+
+  const opt = {
   margin: 0.5,
   filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
   image: { type: 'jpeg', quality: 0.98 },
@@ -252,6 +263,18 @@ const opt = {
   },
   pagebreak: { mode: 'avoid-all', before: '#page-break' } // Optional
 };
+
+    fetch('https://script.google.com/macros/s/AKfycbx9RBw4yXWtXgFNdpdR46D9ELFinSWD7IEB_rwg7s1nbOhNDafXVaTQcDimKK2azfu0/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}
+    })
+    .then(res => res.text())
+    .then(msg => alert("Server says: " + msg))
+    .catch(err => alert("Error: " + err.message));
+  });
+}
+here how to edit sheet sizw the generation size is big but I need to brin g to a4 size
 
 </script>
 
