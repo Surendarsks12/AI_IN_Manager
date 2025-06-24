@@ -247,15 +247,16 @@ function sendPDF() {
   }
 
   const opt = {
-    margin: 0.5,
-    filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    margin:       0.5,
+    filename:     `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
 
   html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
     const base64 = pdfDataUri.split(',')[1];
+
     fetch('https://script.google.com/macros/s/AKfycbx3mI2nzm0bElO266KHtZ1ePBf3ptRbc8bOwND8Ro-G4vS9Dp7wDf3lwWUYOTJ0O8Eb/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -266,6 +267,7 @@ function sendPDF() {
     .catch(err => alert("Error: " + err.message));
   });
 }
+
 </script>
 
 </body>
