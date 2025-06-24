@@ -5,8 +5,8 @@
   <title>Production Log Sheet</title>
   <style>
     body {
-      font-family: 'Times New Roman';
-      padding: 20px;
+      font-family: 'Arial', sans-serif;
+      padding: 10px;
       max-width: 794px;
       margin: auto;
       font-size: 12px;
@@ -15,70 +15,57 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      margin-top: 20px;
       table-layout: fixed;
-      word-wrap: break-word;
-      font-size: 11px;
     }
     th, td {
       border: 1px solid black;
       padding: 4px;
       text-align: center;
+      word-wrap: break-word;
+      font-size: 11px;
     }
     input, select {
       width: 100%;
       box-sizing: border-box;
-      font-size: 10px;
+      font-size: 11px;
     }
     .top-info, .range-entry {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
     }
     button {
-      padding: 6px 12px;
-      background-color: rgb(0,255,255);
+      padding: 5px 10px;
+      background-color: teal;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 4px;
       cursor: pointer;
-      margin-top: 10px;
-      font-size: 12px;
     }
     button:hover {
-      background-color: rgb(0, 200, 200);
+      background-color: darkcyan;
     }
   </style>
 </head>
 <body>
 
 <h2>Production Log Sheet</h2>
-<div id="user-info" style="font-weight: lighter; margin-bottom: 10px; font-style: italic; font-size: 10px;"></div>
+<div id="user-info" style="font-style: italic; font-size: 10px; margin-bottom: 10px;"></div>
 
-<script>
-  if (localStorage.getItem("loggedIn") !== "true") {
-    window.location.href = "index.html";
-  }
-  const user = localStorage.getItem("userEmail");
-  document.getElementById("user-info").innerText = "Logged in as: " + user;
-</script>
-
-<!-- Top Info Inputs -->
 <div class="top-info">
   <label>Shift Date: <input type="date" id="shiftDate"></label>
   <label>Shift Start Time: <input type="time" id="shiftStart"></label>
   <label>Shift End Time: <input type="time" id="shiftEnd"></label>
-  <label>Machine Name: <input type="text" id="machineName" placeholder="e.g., T-1"></label>
+  <label>Machine Name: <input type="text" id="machineName"></label>
   <button onclick="generateRows()">Generate Sheet</button>
 </div>
 
-<!-- Slot Range Fill -->
-<h3 style="font-size: 13px;">Fill Operation & Component for Slot Range</h3>
+<h3>Fill Operation & Component</h3>
 <div class="range-entry">
-  <label>From Slot: <input type="number" id="slotStart" min="1"></label>
-  <label>To Slot: <input type="number" id="slotEnd" min="1"></label>
-  <label>Component Name:
+  <label>From: <input type="number" id="slotStart" min="1"></label>
+  <label>To: <input type="number" id="slotEnd" min="1"></label>
+  <label>Component:
     <select id="rangeDrawing" onchange="updateOperations()">
       <option value="">Select Component</option>
     </select>
@@ -89,52 +76,179 @@
     </select>
   </label>
   <label>Component ID: <span id="componentIdDisplay">-</span></label>
-  <button onclick="fillRowsBySlot()">Apply to Slot Range</button>
+  <button onclick="fillRowsBySlot()">Apply</button>
 </div>
 
-<!-- Table -->
 <table id="logTable">
   <thead>
     <tr>
-      <th>Slot No.</th><th>Time In</th><th>Time Out</th><th>Component ID</th><th>Operation</th>
-      <th>Setting Time</th><th>Idle Time</th><th>Working Time</th>
-      <th>Qty</th><th>Remarks</th><th>Efficiency (%)</th>
+      <th>Slot</th><th>Time In</th><th>Time Out</th><th>Component ID</th><th>Operation</th>
+      <th>Setting</th><th>Idle</th><th>Working</th><th>Qty</th><th>Remarks</th><th>Efficiency</th>
     </tr>
   </thead>
   <tbody></tbody>
 </table>
 
-<!-- Efficiency -->
 <button onclick="calculateEfficiency()">Generate Efficiency</button>
-<h3 id="finalEfficiency" style="margin-top: 10px; color: darkblue; font-size: 13px;"></h3>
+<h3 id="finalEfficiency"></h3>
 
-<!-- PDF Button -->
-<button onclick="sendPDF()">Submit & Save to PDF</button>
+<button onclick="sendPDF()">Submit & Save PDF</button>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
+let cycleTimeMap = {}, operationOptions = {}, componentIds = {}, componentNames = {};
+
+window.onload = () => {
+  fetch("https://script.google.com/macros/s/AKfycbzRAMYIy9L2nzYgy_1qSSYWFctszMdRE2JqIytU_jQ8xCJZzNTrD7NccQN4eKNYAw72/exec")
+    .then(res => res.json())
+    .then(data => {
+      cycleTimeMap = data;
+      operationOptions = data.options || {};
+      componentIds = data.componentIds || {};
+      componentNames = data.componentNames || {};
+      populateDrawingDropdown();
+    });
+};
+
+function populateDrawingDropdown() {
+  const sel = document.getElementById("rangeDrawing");
+  for (const name in operationOptions) {
+    const opt = document.createElement("option");
+    opt.value = name;
+    opt.text = name;
+    sel.appendChild(opt);
+  }
+}
+
+function updateOperations() {
+  const name = document.getElementById("rangeDrawing").value;
+  const ops = operationOptions[name] || [];
+  const opSel = document.getElementById("rangeOperation");
+  document.getElementById("componentIdDisplay").textContent = componentIds[name] || "-";
+  opSel.innerHTML = "<option value=''>Select Operation</option>";
+  ops.forEach(op => {
+    const opt = document.createElement("option");
+    opt.value = op;
+    opt.text = op;
+    opSel.appendChild(opt);
+  });
+}
+
+function formatTime(date) {
+  return date.toTimeString().substring(0,5);
+}
+
+function generateRows() {
+  const start = document.getElementById("shiftStart").value;
+  const end = document.getElementById("shiftEnd").value;
+  const tbody = document.querySelector("#logTable tbody");
+  tbody.innerHTML = "";
+  if (!start || !end) return alert("Enter start & end time");
+
+  let startTime = new Date(`1970-01-01T${start}`);
+  let endTime = new Date(`1970-01-01T${end}`);
+  if (endTime <= startTime) endTime.setDate(endTime.getDate() + 1);
+
+  let current = new Date(startTime);
+  let slot = 1;
+  while (current < endTime) {
+    let next = new Date(current.getTime() + 3600000);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${slot}</td>
+      <td>${formatTime(current)}</td>
+      <td>${formatTime(next)}</td>
+      <td><input readonly></td><td><input></td>
+      <td><input type="number" onchange="calcWorking(this)"></td>
+      <td><input type="number" onchange="calcWorking(this)"></td>
+      <td><input readonly></td>
+      <td><input type="number"></td>
+      <td><input></td>
+      <td><input readonly></td>
+    `;
+    tbody.appendChild(tr);
+    current = next;
+    slot++;
+  }
+}
+
+function calcWorking(el) {
+  const row = el.closest("tr");
+  const setting = parseFloat(row.children[5].children[0].value) || 0;
+  const idle = parseFloat(row.children[6].children[0].value) || 0;
+  const working = 1 - ((setting + idle) / 60);
+  row.children[7].children[0].value = working > 0 ? working.toFixed(2) : "0.00";
+}
+
+function fillRowsBySlot() {
+  const from = +document.getElementById("slotStart").value;
+  const to = +document.getElementById("slotEnd").value;
+  const name = document.getElementById("rangeDrawing").value;
+  const op = document.getElementById("rangeOperation").value;
+  const id = componentIds[name] || "-";
+
+  document.querySelectorAll("#logTable tbody tr").forEach((row, i) => {
+    const slot = i + 1;
+    if (slot >= from && slot <= to) {
+      row.children[3].children[0].value = id;
+      row.children[4].children[0].value = op;
+    }
+  });
+}
+
+function calculateEfficiency() {
+  const rows = document.querySelectorAll("#logTable tbody tr");
+  let totalEff = 0, count = 0;
+
+  rows.forEach(row => {
+    const id = row.children[3].children[0].value.trim();
+    const op = row.children[4].children[0].value.trim();
+    const qty = +row.children[8].children[0].value;
+    const workHrs = +row.children[7].children[0].value;
+    const workMin = workHrs * 60;
+    const key = `${(componentNames[id] || '').toLowerCase()}_${op}`;
+    const cycleTime = +cycleTimeMap[key] || 0;
+
+    if (!id || !op || !qty || !workMin || !cycleTime) {
+      row.children[10].children[0].value = "N/A";
+      return;
+    }
+
+    const efficiency = ((qty * cycleTime) / workMin) * 100;
+    row.children[10].children[0].value = efficiency.toFixed(1);
+    totalEff += efficiency;
+    count++;
+  });
+  document.getElementById("finalEfficiency").innerText = count ? `Overall Efficiency: ${(totalEff / count).toFixed(1)}%` : "";
+}
+
 function sendPDF() {
   const element = document.body;
   const employee = prompt("Enter Employee ID:");
   const shiftDate = document.getElementById("shiftDate").value;
-  const shift = prompt("Enter Shift Number (e.g., Shift-1):");
-
-  if (!employee || !shiftDate || !shift) {
-    alert("Please fill Employee ID, Shift Date and Shift Number.");
-    return;
-  }
+  const shift = prompt("Enter Shift (e.g., Shift-1):");
+  if (!employee || !shiftDate || !shift) return alert("Missing info");
 
   const opt = {
-    margin: [0.2, 0.2, 0.2, 0.2],
+    margin: 0.3,
     filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 1.5, useCORS: true },
+    html2canvas: { scale: 1.5 },
     jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
 
-  html2pdf().set(opt).from(element).save();
+ html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
+    const base64 = pdfDataUri.split(',')[1];
+    fetch('https://script.google.com/macros/s/AKfycbx9RBw4yXWtXgFNdpdR46D9ELFinSWD7IEB_rwg7s1nbOhNDafXVaTQcDimKK2azfu0/exec', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}
+    })
+    .then(res => res.text())
+    .then(msg => alert("Server says: " + msg))
+    .catch(err => alert("Error: " + err.message));
+
 }
 </script>
-
 </body>
 </html>
