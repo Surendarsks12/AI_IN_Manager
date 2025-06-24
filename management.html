@@ -51,6 +51,10 @@
 
   <label for="start-date"><strong>Start Date:</strong></label>
   <input type="date" id="start-date" required><br><br>
+  <br>
+<label for="free-time"><strong>Free Time per Shift (in hours):</strong></label>
+<input type="number" id="free-time" min="0" max="8" value="1" required><br><br>
+
 
   <div id="loading" class="loading">Loading components...</div>
 
@@ -73,7 +77,7 @@
 
   <script>
     const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
-    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbz-uBXDCZycsgIljjl09_Gh7wLKktwFh4_LWHrEXUGk_8ZSMUs5orCAC8OPF7JDNLeXEw/exec";
+    const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbwpziEsjDkoeW5_rYPQsImaBLmhSjbD06Qq179OE4sgb3v8JjuQwgB0JS3kjWE85X-aFg/exec";
 
     let componentOptions = [];
 
@@ -163,6 +167,114 @@
         alert("❌ Allocation error. See console for details.");
       });
     };
+    function doPost(e) {
+  const request = JSON.parse(e.postData.contents);
+  const startDate = new Date(request.startDate);
+  const freeTime = parseFloat(request.freeTime) || 1;
+  const orders = request.data;
+
+  const ss = SpreadsheetApp.openById("YOUR_SPREADSHEET_ID");
+  const compSheet = ss.getSheetByName("Components");
+  const allocSheet = ss.getSheetByName("machine_allocation");
+
+  const compData = compSheet.getDataRange().getValues();
+  const components = parseComponentData(compData);
+
+  let allocationLog = [];
+
+  for (const order of orders) {
+    const compId = order.component;
+    const qty = parseInt(order.quantity);
+    const dueDate = new Date(order.delivery);
+
+    const ops = components[compId];
+    if (!ops) continue;
+
+    for (const op of ops) {
+      const totalTime = (op.time * qty) + op.setting; // in hours
+      const suitableMachines = op.machines;
+
+      const allocated = allocateToMachine(startDate, dueDate, totalTime, suitableMachines, freeTime, allocSheet);
+      if (allocated) {
+        allocationLog.push([allocated.date, allocated.shift, allocated.machine, `${compId}-${qty}`, op.operation]);
+      }
+    }
+  }
+
+  // Optional: Write log to another sheet
+  const logSheet = ss.getSheetByName("allocation_log") || ss.insertSheet("allocation_log");
+  logSheet.clearContents();
+  logSheet.getRange(1, 1, allocationLog.length, 5).setValues(allocationLog);
+
+  return ContentService.createTextOutput("Allocation done.");
+}
+
+function parseComponentData(data) {
+  const map = {};
+  let currentId = "";
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    if (row[0]) currentId = row[0];
+    const op = row[2];
+    const time = parseFloat(row[3]);
+    const setting = parseFloat(data[i][22]) || 2; // default setting time
+
+    const machineFlags = row.slice(4, 14); // T1 to V2 (10)
+    const machineList = [];
+    for (let j = 0; j < machineFlags.length; j++) {
+      if (machineFlags[j] == 1) {
+        machineList.push(j); // index corresponds to T1, T2, ...
+      }
+    }
+
+    if (!map[currentId]) map[currentId] = [];
+    map[currentId].push({
+      operation: op,
+      time: time,
+      setting: setting,
+      machines: machineList
+    });
+  }
+
+  return map;
+}
+
+function allocateToMachine(startDate, dueDate, hoursNeeded, machines, freeTime, sheet) {
+  const daysToTry = (dueDate - startDate) / (1000 * 3600 * 24);
+  const shiftsPerDay = 3;
+  const totalShiftTime = 8 - freeTime;
+
+  for (let d = 0; d <= daysToTry; d++) {
+    const day = new Date(startDate);
+    day.setDate(day.getDate() + d);
+    const dayStr = Utilities.formatDate(day, "GMT+5:30", "yyyy-MM-dd");
+
+    for (let shift = 1; shift <= shiftsPerDay; shift++) {
+      for (const m of machines) {
+        const available = getAvailableTime(sheet, dayStr, shift, m);
+        if (available >= hoursNeeded) {
+          writeAllocation(sheet, dayStr, shift, m, hoursNeeded);
+          return { date: dayStr, shift: "Shift " + shift, machine: "M" + (m + 1) };
+        }
+      }
+    }
+  }
+
+  return null;
+}
+
+function getAvailableTime(sheet, day, shift, machineIndex) {
+  // Implement a way to check used time for given day/shift/machine
+  // You might use hidden columns or keep a matrix in memory
+  return 6; // Example: return 6 hours free
+}
+
+function writeAllocation(sheet, day, shift, machineIndex, hoursUsed) {
+  // Implement logic to update the sheet in proper format
+  // e.g., find correct cell range for that day + shift + machine
+}
+
   </script>
 </body>
 </html>
