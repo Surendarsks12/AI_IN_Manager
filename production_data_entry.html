@@ -226,29 +226,35 @@ function sendPDF() {
   const element = document.body;
   const employee = prompt("Enter Employee ID:");
   const shiftDate = document.getElementById("shiftDate").value;
-  const shift = prompt("Enter Shift (e.g., Shift-1):");
-  if (!employee || !shiftDate || !shift) return alert("Missing info");
+  const shift = prompt("Enter Shift Number (e.g., Shift-1):");
+
+  if (!employee || !shiftDate || !shift) {
+    alert("Please fill Employee ID, Shift Date and Shift Number.");
+    return;
+  }
 
   const opt = {
-    margin: 0.3,
-    filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 1.5 },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    margin:       [0.2, 0.2, 0.2, 0.2], // top, right, bottom, left
+    filename:     `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { scale: 1.5, useCORS: true, scrollY: 0 },
+    jsPDF:        { unit: 'in', format: 'a4', orientation: 'portrait' }
   };
 
- html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
+  html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
     const base64 = pdfDataUri.split(',')[1];
+
     fetch('https://script.google.com/macros/s/AKfycbx9RBw4yXWtXgFNdpdR46D9ELFinSWD7IEB_rwg7s1nbOhNDafXVaTQcDimKK2azfu0/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}
+      body: `file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}`
     })
     .then(res => res.text())
     .then(msg => alert("Server says: " + msg))
     .catch(err => alert("Error: " + err.message));
-
+  });
 }
+
 </script>
 </body>
 </html>
