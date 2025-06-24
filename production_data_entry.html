@@ -247,35 +247,25 @@ function sendPDF() {
   }
 
   const opt = {
-  margin: 0.5,
-  filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
-  image: { type: 'jpeg', quality: 0.98 },
-  html2canvas: {
-    scale: 1, // Reduced scale to fit A4 size
-    useCORS: true,
-    width: 595, // A4 width in pixels (at 96 DPI)
-    height: 842 // A4 height in pixels (at 96 DPI)
-  },
-  jsPDF: {
-    unit: 'pt', // Changed unit to pt for better precision
-    format: 'a4',
-    orientation: 'portrait'
-  },
-  pagebreak: { mode: 'avoid-all', before: '#page-break' } // Optional
-};
+    margin: 0.5,
+    filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'in', format: 'a3', orientation: 'portrait' }
+  };
 
+  html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
+    const base64 = pdfDataUri.split(',')[1];
     fetch('https://script.google.com/macros/s/AKfycbx9RBw4yXWtXgFNdpdR46D9ELFinSWD7IEB_rwg7s1nbOhNDafXVaTQcDimKK2azfu0/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}
+      body: `file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}`
     })
     .then(res => res.text())
     .then(msg => alert("Server says: " + msg))
     .catch(err => alert("Error: " + err.message));
   });
 }
-here how to edit sheet sizw the generation size is big but I need to brin g to a4 size
-
 </script>
 
 </body>
