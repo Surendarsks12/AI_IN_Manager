@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Production data Sheet</title>
+  <title>Production Log Sheet</title>
   <style>
     body {
       font-family: 'Times New Roman';
@@ -235,7 +235,7 @@ function calculateEfficiency() {
     count ? `Overall Efficiency: ${(totalEfficiency / count).toFixed(1)}%` : '';
 }
 
-  function sendPDF() {
+function sendPDF() {
   const element = document.body;
   const employee = prompt("Enter Employee ID:");
   const shiftDate = document.getElementById("shiftDate").value;
@@ -246,20 +246,26 @@ function calculateEfficiency() {
     return;
   }
 
-  html2pdf().from(element).outputPdf('datauristring').then(function(pdfDataUri) {
-    const base64 = pdfDataUri.split(',')[1];
+  const opt = {
+    margin: 0.5,
+    filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true },
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+  };
 
-    fetch('https://script.google.com/macros/s/AKfycbx9RBw4yXWtXgFNdpdR46D9ELFinSWD7IEB_rwg7s1nbOhNDafXVaTQcDimKK2azfu0/exec', {
+  html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
+    const base64 = pdfDataUri.split(',')[1];
+    fetch('https://script.google.com/macros/s/AKfycbx3mI2nzm0bElO266KHtZ1ePBf3ptRbc8bOwND8Ro-G4vS9Dp7wDf3lwWUYOTJ0O8Eb/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}
+      body: `file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}`
     })
     .then(res => res.text())
     .then(msg => alert("Server says: " + msg))
     .catch(err => alert("Error: " + err.message));
   });
 }
-
 </script>
 
 </body>
