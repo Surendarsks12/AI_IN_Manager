@@ -76,7 +76,7 @@ let operationOptions = {};
 let componentIds = {};
 
 window.onload = () => {
-  fetch("https://script.google.com/macros/s/AKfycbytMFU5qjNk7Qzx4S24_dT4OcFZCS1anQZT28MuvvQCDC11eJggSjmBWXb1jaU0OqzJ/exec")
+  fetch("https://script.google.com/macros/s/AKfycbx3mI2nzm0bElO266KHtZ1ePBf3ptRbc8bOwND8Ro-G4vS9Dp7wDf3lwWUYOTJ0O8Eb/exec")
     .then(res => res.json())
     .then(data => {
       cycleTimeMap = data;
@@ -228,7 +228,7 @@ function sendPDF() {
   html2pdf().from(element).outputPdf('datauristring').then(function(pdfDataUri) {
     const base64 = pdfDataUri.split(',')[1];
 
-    fetch('https://script.google.com/macros/s/AKfycbytMFU5qjNk7Qzx4S24_dT4OcFZCS1anQZT28MuvvQCDC11eJggSjmBWXb1jaU0OqzJ/exec', {
+    fetch('https://script.google.com/macros/s/AKfycbx3mI2nzm0bElO266KHtZ1ePBf3ptRbc8bOwND8Ro-G4vS9Dp7wDf3lwWUYOTJ0O8Eb/exec', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: `file=${encodeURIComponent(base64)}&employee=${employee}&date=${shiftDate}&shift=${shift}`
