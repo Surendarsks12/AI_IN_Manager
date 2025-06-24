@@ -251,7 +251,7 @@ function sendPDF() {
     filename: `LogSheet_${employee}_${shiftDate}_${shift}.pdf`,
     image: { type: 'jpeg', quality: 0.98 },
     html2canvas: { scale: .8, useCORS: true },
-    jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }
+    jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
   };
 
   html2pdf().set(opt).from(element).outputPdf('datauristring').then(function(pdfDataUri) {
