@@ -4,114 +4,178 @@
   <meta charset="UTF-8">
   <title>Manual Allocation</title>
   <style>
-    body { font-family: Arial; padding: 20px; }
-    .machine-btn { margin: 5px; padding: 10px; background: #007bff; color: white; cursor: pointer; }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #77756b;
+      color: white;
+      padding: 20px;
+    }
+    button {
+      padding: 10px 15px;
+      margin: 8px;
+      background-color: #444;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: teal;
+    }
+    .machine-container {
+      margin-top: 20px;
+    }
+    .dialog {
+      position: fixed;
+      top: 20%;
+      left: 30%;
+      background: #fff;
+      color: black;
+      padding: 20px;
+      border-radius: 8px;
+      z-index: 100;
+      display: none;
+    }
+    .dialog label {
+      display: block;
+      margin: 10px 0 5px;
+    }
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: none;
+      z-index: 99;
+    }
   </style>
 </head>
 <body>
 
-<h2>Allocate Work to Machines</h2>
-<div id="info"></div>
-<div id="machines"></div>
+  <h2>Allocate Work to Machines</h2>
+  <div id="layoutInfo"></div>
+  <div id="machineButtons" class="machine-container"></div>
 
-<div id="dialog" style="display:none; border:1px solid #000; padding:20px; background:#eee; margin-top:20px;">
-  <h3 id="assignTitle">Assign</h3>
-  <label>Component: 
-    <select id="componentSelect"></select>
-  </label><br>
-  <label>Quantity: <input id="qty" type="number"></label><br>
-  <label>Setting Time (min): <input id="setting" type="number"></label><br>
-  <label>Idle Time (min): <input id="idle" type="number"></label><br>
-  <button onclick="submitAllocation()">Submit</button>
-</div>
+  <button onclick="resetAllocations()">❌ Clear All Allocations</button>
 
-<br><br>
-<button onclick="clearData()">🧹 Clear All Data</button>
+  <div class="overlay" id="overlay"></div>
+  <div class="dialog" id="dialogBox">
+    <h3 id="dialogTitle">Allocate Work</h3>
+    <label>Component:
+      <select id="componentSelect"></select>
+    </label>
+    <label>Quantity:
+      <input type="number" id="qtyInput" min="1">
+    </label>
+    <label>Setting Time (hrs):
+      <input type="number" id="settingTimeInput" min="0">
+    </label>
+    <label>Idle Time (hrs):
+      <input type="number" id="idleTimeInput" min="0">
+    </label>
+    <button onclick="submitAllocation()">Submit</button>
+    <button onclick="closeDialog()">Cancel</button>
+  </div>
 
-<script>
-  let cycleMap = {};
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzh0m2bz6dbnA74O28Wb4zrhIXjCvyMpCyRgKIxLZNKczJwJnDzrwPXhinTpCb3lpli/exec";
+  <script>
+    const SHEET_URL = "https://script.google.com/macros/s/AKfycbzh0m2bz6dbnA74O28Wb4zrhIXjCvyMpCyRgKIxLZNKczJwJnDzrwPXhinTpCb3lpli/exec";
+    let machineList = [], shiftHours = 8, selectedDay = 'F', componentMap = {};
 
-  fetch(SCRIPT_URL)
-    .then(res => res.json())
-    .then(data => {
-      cycleMap = data.cycleMap;
-      populateLayout();
-    });
+    // Load layout
+    window.onload = async () => {
+      const layout = JSON.parse(localStorage.getItem("layout"));
+      if (!layout) return alert("No layout data found. Please configure in Layout page.");
 
-  function populateLayout() {
-    const layout = JSON.parse(localStorage.getItem("layout"));
-    if (!layout) return alert("Layout not found.");
+      machineList = layout.machines || [];
+      shiftHours = layout.shiftHours;
+      selectedDay = layout.weekday || "F";
 
-    document.getElementById("info").innerText = `Weekdays: ${layout.days.join(", ")} | Shift: ${layout.shiftHours} hrs`;
+      document.getElementById("layoutInfo").innerHTML = `<b>Weekdays:</b> ${selectedDay} <br> <b>Shift:</b> ${shiftHours} hrs`;
 
-    const machineDiv = document.getElementById("machines");
-    machineDiv.innerHTML = "";
-    for (let i = 1; i <= layout.machineCount; i++) {
-      const btn = document.createElement("button");
-      btn.className = "machine-btn";
-      btn.innerText = `t${i}`;
-      btn.onclick = () => openDialog(`t${i}`);
-      machineDiv.appendChild(btn);
-    }
+      machineList.forEach(machine => {
+        const btn = document.createElement("button");
+        btn.textContent = machine;
+        btn.onclick = () => openDialog(machine);
+        document.getElementById("machineButtons").appendChild(btn);
+      });
 
-    const select = document.getElementById("componentSelect");
-    select.innerHTML = "";
-    Object.keys(cycleMap).forEach(k => {
-      const opt = document.createElement("option");
-      opt.value = k;
-      opt.innerText = k;
-      select.appendChild(opt);
-    });
-  }
-
-  let currentMachine = "";
-
-  function openDialog(machine) {
-    currentMachine = machine;
-    document.getElementById("assignTitle").innerText = `Allocate for ${machine}`;
-    document.getElementById("dialog").style.display = "block";
-  }
-
-  function submitAllocation() {
-    const component = document.getElementById("componentSelect").value;
-    const qty = +document.getElementById("qty").value;
-    const setting = +document.getElementById("setting").value;
-    const idle = +document.getElementById("idle").value;
-    const cycle = +cycleMap[component];
-    const total = qty * cycle;
-
-    const layout = JSON.parse(localStorage.getItem("layout"));
-    const payload = {
-      allocations: [{
-        day: layout.days[0], // pick first selected day for now
-        machine: currentMachine,
-        shift: 1,
-        component,
-        qty,
-        setting,
-        idle,
-        total
-      }]
+      await fetchComponentData();
     };
 
-    fetch(SCRIPT_URL, {
-      method: "POST",
-      body: JSON.stringify(payload)
-    }).then(res => res.text()).then(alert);
-  }
+    // Fetch component & cycle time data
+    async function fetchComponentData() {
+      const res = await fetch("https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec");
+      const data = await res.json();
+      componentMap = data || {};
 
-  function clearData() {
-    const code = prompt("Enter secret code to clear all:");
-    if (code === "secret@123") {
-      fetch(SCRIPT_URL, {
-        method: "POST",
-        body: JSON.stringify({ clear: code })
-      }).then(res => res.text()).then(alert);
-    } else {
-      alert("❌ Invalid code.");
+      const sel = document.getElementById("componentSelect");
+      sel.innerHTML = '<option value="">Select Component</option>';
+      for (let key in componentMap) {
+        sel.innerHTML += `<option value="${key}">${key}</option>`;
+      }
     }
-  }
-</script>
+
+    let currentMachine = "";
+
+    function openDialog(machine) {
+      currentMachine = machine;
+      document.getElementById("dialogTitle").innerText = `Allocate for ${machine}`;
+      document.getElementById("dialogBox").style.display = 'block';
+      document.getElementById("overlay").style.display = 'block';
+    }
+
+    function closeDialog() {
+      document.getElementById("dialogBox").style.display = 'none';
+      document.getElementById("overlay").style.display = 'none';
+    }
+
+    async function submitAllocation() {
+      const comp = document.getElementById("componentSelect").value;
+      const qty = +document.getElementById("qtyInput").value;
+      const setting = +document.getElementById("settingTimeInput").value;
+      const idle = +document.getElementById("idleTimeInput").value;
+      const cycle = +componentMap[comp] || 0;
+
+      if (!comp || !qty || !cycle) {
+        alert("❗ Fill all fields correctly and ensure cycle time is valid.");
+        return;
+      }
+
+      const totalTime = (qty * cycle) / 60; // Convert to hours
+
+      const data = {
+        day: selectedDay,
+        machine: currentMachine,
+        shift: shiftHours,
+        component: comp,
+        quantity: qty,
+        settingTime: setting,
+        idleTime: idle,
+        totalTime: totalTime.toFixed(2)
+      };
+
+      await fetch(SHEET_URL, {
+        method: 'POST',
+        body: new URLSearchParams(data)
+      })
+      .then(r => r.text())
+      .then(msg => alert("✅ " + msg))
+      .catch(e => alert("❌ Error saving: " + e.message));
+
+      closeDialog();
+    }
+
+    function resetAllocations() {
+      const code = prompt("Enter secret code to clear all data:");
+      if (code === "RESET123") {
+        fetch(SHEET_URL + "?reset=1")
+          .then(res => res.text())
+          .then(msg => alert("✅ " + msg))
+          .catch(err => alert("❌ Reset failed"));
+      } else {
+        alert("❌ Invalid code.");
+      }
+    }
+  </script>
 </body>
 </html>
