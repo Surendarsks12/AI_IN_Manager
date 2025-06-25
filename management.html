@@ -51,10 +51,9 @@
 
   <label for="start-date"><strong>Start Date:</strong></label>
   <input type="date" id="start-date" required><br><br>
-  <br>
-<label for="free-time"><strong>Free Time per Shift (in hours):</strong></label>
-<input type="number" id="free-time" min="0" max="8" value="1" required><br><br>
 
+  <label for="free-time"><strong>Free Time per Shift (in hours):</strong></label>
+  <input type="number" id="free-time" min="0" max="8" value="1" required><br><br>
 
   <div id="loading" class="loading">Loading components...</div>
 
@@ -72,16 +71,61 @@
 
   <button id="add-row-btn" style="display:none;">➕ Add Another Product</button>
   <button id="allocate-btn" style="display:none;">📦 Allocate</button>
-  <button onclick="window.open('https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit#gid=SHEET_GID', '_blank')">📄 View Allocation Sheet</button>
+  <button onclick="window.open('https://docs.google.com/spreadsheets/d/1D0if6lpNXC3LPK_ZyGYvA_TsAVH-UkwFzPphbc8lRoM/edit#gid=1427523297', '_blank')">📄 View Allocation Sheet</button>
   <button onclick="window.print()">🖨️ Print Allocation</button>
 
-  <script>
-    const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
-  const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbz0-litfEoit5cSoEydfkwvMyJoLAPTO-61SqLjMz8iw52lnzlpqyGYOWnhPJNa73udig/exec";
+<script>
+  const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
+  const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbyxMgfU9TZSS41u626CrY0o58eFuQGWCCPShvcGxwc7d3AKcIuNiZPc_WaJ_ZYv0dCLjg/exec";
 
-  // ... rest same ...
+  const productTable = document.getElementById("product-table");
+  const addRowBtn = document.getElementById("add-row-btn");
+  const allocateBtn = document.getElementById("allocate-btn");
+  const loadingDiv = document.getElementById("loading");
 
-  document.getElementById('allocate-btn').onclick = () => {
+  let components = [];
+
+  window.onload = () => {
+    fetch(DATA_FETCH_URL)
+      .then(res => res.json())
+      .then(data => {
+        components = Object.keys(data);
+        showUI();
+        addProductRow();  // Add first row by default
+      })
+      .catch(() => {
+        loadingDiv.textContent = "❌ Failed to load component data.";
+      });
+  };
+
+  function showUI() {
+    loadingDiv.style.display = "none";
+    productTable.style.display = "table";
+    addRowBtn.style.display = "inline-block";
+    allocateBtn.style.display = "inline-block";
+  }
+
+  addRowBtn.onclick = addProductRow;
+
+  function addProductRow() {
+    const tbody = document.querySelector("#product-table tbody");
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>
+        <select required>
+          <option value="">-- Select --</option>
+          ${components.map(c => `<option value="${c}">${c}</option>`).join("")}
+        </select>
+      </td>
+      <td><input type="number" min="1" required></td>
+      <td><input type="date" required></td>
+      <td><button onclick="this.closest('tr').remove()">❌</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  allocateBtn.onclick = () => {
     const rows = Array.from(document.querySelectorAll("#product-table tbody tr"));
     const startDate = document.getElementById("start-date").value;
     const freeTime = document.getElementById("free-time").value;
@@ -94,9 +138,14 @@
       delivery: row.querySelector("input[type='date']").value
     }));
 
+    if (data.some(d => !d.component || !d.quantity || !d.delivery)) {
+      alert("❗ Please fill all fields.");
+      return;
+    }
+
     fetch(ALLOCATE_URL, {
       method: 'POST',
-      body: JSON.stringify({ startDate, data, freeTime }),  // ✅ freeTime added
+      body: JSON.stringify({ startDate, data, freeTime }),
       headers: { 'Content-Type': 'application/json' }
     })
     .then(res => res.text())
@@ -110,3 +159,4 @@
 
 </body>
 </html>
+
