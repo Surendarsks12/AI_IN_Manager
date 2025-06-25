@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Layout Setup</title>
+  <style>
+    body { font-family: 'Times New Roman'; padding: 20px; background-color: #E6FFFF; }
+    label, input, select { display: block; margin: 10px 0; }
+    .machine-list, .shift-list { margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px; background-color: teal; color: white; border: none; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+<h2>Layout Configuration</h2>
+
+<label>Number of Machines:
+  <input type="number" id="machineCount" min="1" max="20" />
+</label>
+<div id="machineNames"></div>
+
+<label>Weekdays:
+  <select id="weekdays" multiple size="7">
+    <option value="A">Monday-A</option>
+    <option value="B">Tuesday-B</option>
+    <option value="C">Wednesday-C</option>
+    <option value="D">Thursday-D</option>
+    <option value="E">Friday-E</option>
+    <option value="F">Saturday-F</option>
+    <option value="G">Sunday-G</option>
+  </select>
+</label>
+
+<h3>Shift Configuration</h3>
+<div class="shift-list">
+  <label>Shift Hours: <input type="number" id="shiftHours" value="8" /></label>
+  <label>Shift Timings: <input type="text" id="shiftTimings" placeholder="e.g. 8AM-4PM" /></label>
+</div>
+
+<button onclick="saveLayout()">Save Layout</button>
+
+<script>
+function saveLayout() {
+  const machineInputs = document.querySelectorAll('.machine-input');
+  const machines = Array.from(machineInputs).map(input => input.value);
+  const weekdays = Array.from(document.getElementById('weekdays').selectedOptions).map(opt => opt.value);
+  const shiftHours = +document.getElementById('shiftHours').value;
+  const shiftTimings = document.getElementById('shiftTimings').value;
+
+  localStorage.setItem('layoutData', JSON.stringify({ machines, weekdays, shiftHours, shiftTimings }));
+  alert("Layout saved!");
+}
+
+document.getElementById('machineCount').addEventListener('input', e => {
+  const count = +e.target.value;
+  const container = document.getElementById('machineNames');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    container.innerHTML += `<label>Machine ${i + 1}: <input class="machine-input" type="text" placeholder="T${i + 1}" /></label>`;
+  }
+});
+</script>
+
+</body>
+</html>
