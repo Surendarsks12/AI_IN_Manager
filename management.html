@@ -2,161 +2,41 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Manager Panel - Product Entry</title>
+  <title>Production Allocation Dashboard</title>
   <style>
     body {
       font-family: "Times New Roman", sans-serif;
-      padding: 30px;
-      background-color: rgb(127,255,212);
       text-align: center;
+      background-color: #f0f8ff;
+      padding: 50px;
     }
-    table {
-      margin: 20px auto;
-      border-collapse: collapse;
-      width: 90%;
-    }
-    th, td {
-      border: 1px solid #ccc;
-      padding: 10px;
-    }
-    th {
-      background-color: #555;
-      color: white;
-    }
-    input[type="date"], input[type="number"], select {
-      width: 95%;
-      padding: 6px;
-      box-sizing: border-box;
+    h1 {
+      color: #004080;
+      margin-bottom: 40px;
     }
     button {
-      padding: 10px 20px;
-      margin: 10px;
-      background-color: rgb(0,0,205);
+      background-color: #0074D9;
       color: white;
       border: none;
-      border-radius: 6px;
-      font-size: 16px;
+      padding: 15px 30px;
+      margin: 20px;
+      border-radius: 10px;
+      font-size: 18px;
       cursor: pointer;
     }
-    .loading {
-      color: #555;
-      font-size: 18px;
-      margin-top: 20px;
+    button:hover {
+      background-color: #0056a3;
     }
   </style>
 </head>
 <body>
 
-  <h1>Product Allocation Desk</h1>
+  <h1>Production Allocation Dashboard</h1>
 
-  <label for="start-date"><strong>Start Date:</strong></label>
-  <input type="date" id="start-date" required><br><br>
-
-  <label for="free-time"><strong>Free Time per Shift (in hours):</strong></label>
-  <input type="number" id="free-time" min="0" max="8" value="1" required><br><br>
-
-  <div id="loading" class="loading">Loading components...</div>
-
-  <table id="product-table" style="display:none;">
-    <thead>
-      <tr>
-        <th>Component Code</th>
-        <th>Quantity</th>
-        <th>Delivery Date</th>
-        <th>Remove</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
-
-  <button id="add-row-btn" style="display:none;">➕ Add Another Product</button>
-  <button id="allocate-btn" style="display:none;">📦 Allocate</button>
-  <button onclick="window.open('https://docs.google.com/spreadsheets/d/1D0if6lpNXC3LPK_ZyGYvA_TsAVH-UkwFzPphbc8lRoM/edit#gid=1427523297', '_blank')">📄 View Allocation Sheet</button>
-  <button onclick="window.print()">🖨️ Print Allocation</button>
-
-<script>
-  const DATA_FETCH_URL = "https://script.google.com/macros/s/AKfycbwK9NrcZk6V_t4FAr623NnOgG9OCa2boxlxZMEHvyksdyuJF3iNY0kEgHpd9PvMEZhnxA/exec";
-  const ALLOCATE_URL = "https://script.google.com/macros/s/AKfycbyxMgfU9TZSS41u626CrY0o58eFuQGWCCPShvcGxwc7d3AKcIuNiZPc_WaJ_ZYv0dCLjg/exec";
-
-  const productTable = document.getElementById("product-table");
-  const addRowBtn = document.getElementById("add-row-btn");
-  const allocateBtn = document.getElementById("allocate-btn");
-  const loadingDiv = document.getElementById("loading");
-
-  let components = [];
-
-  window.onload = () => {
-    fetch(DATA_FETCH_URL)
-      .then(res => res.json())
-      .then(data => {
-        components = Object.keys(data);
-        showUI();
-        addProductRow();  // Add first row by default
-      })
-      .catch(() => {
-        loadingDiv.textContent = "❌ Failed to load component data.";
-      });
-  };
-
-  function showUI() {
-    loadingDiv.style.display = "none";
-    productTable.style.display = "table";
-    addRowBtn.style.display = "inline-block";
-    allocateBtn.style.display = "inline-block";
-  }
-
-  addRowBtn.onclick = addProductRow;
-
-  function addProductRow() {
-    const tbody = document.querySelector("#product-table tbody");
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>
-        <select required>
-          <option value="">-- Select --</option>
-          ${components.map(c => `<option value="${c}">${c}</option>`).join("")}
-        </select>
-      </td>
-      <td><input type="number" min="1" required></td>
-      <td><input type="date" required></td>
-      <td><button onclick="this.closest('tr').remove()">❌</button></td>
-    `;
-    tbody.appendChild(tr);
-  }
-
-  allocateBtn.onclick = () => {
-    const rows = Array.from(document.querySelectorAll("#product-table tbody tr"));
-    const startDate = document.getElementById("start-date").value;
-    const freeTime = document.getElementById("free-time").value;
-
-    if (!startDate) return alert("❗ Select a start date.");
-
-    const data = rows.map(row => ({
-      component: row.querySelector("select").value,
-      quantity: row.querySelector("input[type='number']").value,
-      delivery: row.querySelector("input[type='date']").value
-    }));
-
-    if (data.some(d => !d.component || !d.quantity || !d.delivery)) {
-      alert("❗ Please fill all fields.");
-      return;
-    }
-
-    fetch(ALLOCATE_URL, {
-      method: 'POST',
-      body: JSON.stringify({ startDate, data, freeTime }),
-      headers: { 'Content-Type': 'application/json' }
-    })
-    .then(res => res.text())
-    .then(msg => alert("✅ " + msg))
-    .catch(err => {
-      console.error(err);
-      alert("❌ Allocation error. See console for details.");
-    });
-  };
-</script>
+  <button onclick="location.href='layout.html'">🛠️ Layout Setup</button>
+  <button onclick="location.href='allocate.html'">📦 Manual Allocation</button>
 
 </body>
 </html>
+
 
