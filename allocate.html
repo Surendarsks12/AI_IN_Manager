@@ -4,107 +4,114 @@
   <meta charset="UTF-8">
   <title>Manual Allocation</title>
   <style>
-    body { font-family: 'Times New Roman'; padding: 20px; background-color: #FFFBE6; }
-    .machine-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
-    .machine-btn { padding: 10px; background-color: #3399FF; color: white; border: none; border-radius: 8px; cursor: pointer; width: 120px; }
-    .modal {
-      display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-      background: white; padding: 20px; border: 2px solid #333; z-index: 10;
-    }
-    .overlay {
-      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.5); display: none; z-index: 9;
-    }
-    select, input { width: 100%; margin-top: 5px; margin-bottom: 10px; padding: 5px; }
+    body { font-family: Arial; padding: 20px; }
+    .machine-btn { margin: 5px; padding: 10px; background: #007bff; color: white; cursor: pointer; }
   </style>
 </head>
 <body>
 
 <h2>Allocate Work to Machines</h2>
-<div id="layoutInfo"></div>
-<div class="machine-grid" id="machineGrid"></div>
+<div id="info"></div>
+<div id="machines"></div>
 
-<div class="overlay" id="overlay" onclick="closeDialog()"></div>
-<div class="modal" id="modal">
-  <h3 id="modalTitle"></h3>
-  <label>Component: <select id="componentSelect"></select></label>
-  <label>Operation: <input type="number" id="operationInput" min="1" /></label>
-  <label>Quantity: <input type="number" id="quantityInput" /></label>
-  <label>Setting Time (min): <input type="number" id="settingInput" /></label>
-  <label>Idle Time (min): <input type="number" id="idleInput" /></label>
-  <p id="result"></p>
-  <button onclick="allocate()">Allocate</button>
+<div id="dialog" style="display:none; border:1px solid #000; padding:20px; background:#eee; margin-top:20px;">
+  <h3 id="assignTitle">Assign</h3>
+  <label>Component: 
+    <select id="componentSelect"></select>
+  </label><br>
+  <label>Quantity: <input id="qty" type="number"></label><br>
+  <label>Setting Time (min): <input id="setting" type="number"></label><br>
+  <label>Idle Time (min): <input id="idle" type="number"></label><br>
+  <button onclick="submitAllocation()">Submit</button>
 </div>
 
+<br><br>
+<button onclick="clearData()">🧹 Clear All Data</button>
+
 <script>
-let cycleData = {};
-let currentMachine = '';
-let layout = {};
+  let cycleMap = {};
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzh0m2bz6dbnA74O28Wb4zrhIXjCvyMpCyRgKIxLZNKczJwJnDzrwPXhinTpCb3lpli/exec";
 
-fetch("https://script.google.com/macros/s/AKfycbzRAMYIy9L2nzYgy_1qSSYWFctszMdRE2JqIytU_jQ8xCJZzNTrD7NccQN4eKNYAw72/exec")
-  .then(res => res.json())
-  .then(data => { cycleData = data; initLayout(); });
+  fetch(SCRIPT_URL)
+    .then(res => res.json())
+    .then(data => {
+      cycleMap = data.cycleMap;
+      populateLayout();
+    });
 
-function initLayout() {
-  layout = JSON.parse(localStorage.getItem('layoutData'));
-  if (!layout) return alert("No layout found. Please setup layout first.");
+  function populateLayout() {
+    const layout = JSON.parse(localStorage.getItem("layout"));
+    if (!layout) return alert("Layout not found.");
 
-  document.getElementById('layoutInfo').innerHTML = `
-    <p><strong>Weekdays:</strong> ${layout.weekdays.join(', ')}</p>
-    <p><strong>Shift:</strong> ${layout.shiftHours} hrs (${layout.shiftTimings})</p>
-  `;
+    document.getElementById("info").innerText = `Weekdays: ${layout.days.join(", ")} | Shift: ${layout.shiftHours} hrs`;
 
-  const grid = document.getElementById('machineGrid');
-  layout.machines.forEach(name => {
-    const btn = document.createElement('button');
-    btn.textContent = name;
-    btn.className = 'machine-btn';
-    btn.onclick = () => openDialog(name);
-    grid.appendChild(btn);
-  });
+    const machineDiv = document.getElementById("machines");
+    machineDiv.innerHTML = "";
+    for (let i = 1; i <= layout.machineCount; i++) {
+      const btn = document.createElement("button");
+      btn.className = "machine-btn";
+      btn.innerText = `t${i}`;
+      btn.onclick = () => openDialog(`t${i}`);
+      machineDiv.appendChild(btn);
+    }
 
-  const sel = document.getElementById('componentSelect');
-  for (let key in cycleData) {
-    const opt = document.createElement('option');
-    opt.value = key;
-    opt.textContent = key;
-    sel.appendChild(opt);
+    const select = document.getElementById("componentSelect");
+    select.innerHTML = "";
+    Object.keys(cycleMap).forEach(k => {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.innerText = k;
+      select.appendChild(opt);
+    });
   }
-}
 
-function openDialog(machineName) {
-  currentMachine = machineName;
-  document.getElementById('modalTitle').textContent = "Allocate for " + machineName;
-  document.getElementById('overlay').style.display = 'block';
-  document.getElementById('modal').style.display = 'block';
-}
+  let currentMachine = "";
 
-function closeDialog() {
-  document.getElementById('overlay').style.display = 'none';
-  document.getElementById('modal').style.display = 'none';
-}
+  function openDialog(machine) {
+    currentMachine = machine;
+    document.getElementById("assignTitle").innerText = `Allocate for ${machine}`;
+    document.getElementById("dialog").style.display = "block";
+  }
 
-function allocate() {
-  const comp = document.getElementById('componentSelect').value;
-  const qty = +document.getElementById('quantityInput').value;
-  const op = document.getElementById('operationInput').value;
-  const setting = +document.getElementById('settingInput').value;
-  const idle = +document.getElementById('idleInput').value;
+  function submitAllocation() {
+    const component = document.getElementById("componentSelect").value;
+    const qty = +document.getElementById("qty").value;
+    const setting = +document.getElementById("setting").value;
+    const idle = +document.getElementById("idle").value;
+    const cycle = +cycleMap[component];
+    const total = qty * cycle;
 
-  const key = comp.toLowerCase() + "_" + op;
-  const cycleTime = +cycleData[key];
-  const totalOpTime = qty * cycleTime;
+    const layout = JSON.parse(localStorage.getItem("layout"));
+    const payload = {
+      allocations: [{
+        day: layout.days[0], // pick first selected day for now
+        machine: currentMachine,
+        shift: 1,
+        component,
+        qty,
+        setting,
+        idle,
+        total
+      }]
+    };
 
-  const resultText = `
-    <strong>Result:</strong><br>
-    Qty: ${qty}, Cycle Time: ${cycleTime} min<br>
-    <strong>Total Operation Time:</strong> ${totalOpTime} min
-  `;
-  document.getElementById('result').innerHTML = resultText;
+    fetch(SCRIPT_URL, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    }).then(res => res.text()).then(alert);
+  }
 
-  // ✨ Here you can add the saving logic (Google Sheets API call)
-}
+  function clearData() {
+    const code = prompt("Enter secret code to clear all:");
+    if (code === "secret@123") {
+      fetch(SCRIPT_URL, {
+        method: "POST",
+        body: JSON.stringify({ clear: code })
+      }).then(res => res.text()).then(alert);
+    } else {
+      alert("❌ Invalid code.");
+    }
+  }
 </script>
-
 </body>
 </html>
